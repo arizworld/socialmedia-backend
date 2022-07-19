@@ -6,9 +6,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const multer_gridfs_storage_1 = require("multer-gridfs-storage");
 const multer_1 = __importDefault(require("multer"));
 const path_1 = __importDefault(require("path"));
+const config_1 = __importDefault(require("../config/config"));
 const ErrorHandler_1 = __importDefault(require("../utils/ErrorHandler"));
 const storage = new multer_gridfs_storage_1.GridFsStorage({
-    url: "mongodb+srv://ArizWorld:Ariz.1234@mycluster.90knz.mongodb.net/socialmedia?retryWrites=true&w=majority",
+    url: `mongodb+srv://${config_1.default.mongoUsername}:${config_1.default.mongoPassword}@mycluster.90knz.mongodb.net/${config_1.default.testDb}?retryWrites=true&w=majority`,
     file: (req, file) => {
         return new Promise((resolve, reject) => {
             console.log({ file: file });

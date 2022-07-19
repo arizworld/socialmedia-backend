@@ -8,7 +8,14 @@ dotenv_1.default.config();
 exports.default = {
     host: process.env.HOST || "localhost",
     port: process.env.PORT || 8080,
-    mongoURI: `mongodb+srv://${process.env.MONGO_USERNAME}:${process.env.MONGO_PASSWORD}@mycluster.90knz.mongodb.net/ecart?retryWrites=true&w=majority`,
+    mongoUsername: process.env.MONGO_USERNAME,
+    mongoPassword: process.env.MONGO_PASSWORD,
+    testDb: "blogposttest",
+    productionDb: "blogpost",
+    mongoOptions: {
+        retryWrites: true,
+        w: "majority",
+    },
     secretKey: process.env.JWT_SECRET,
     resetDelay: 3 * 60 * 1000,
 };

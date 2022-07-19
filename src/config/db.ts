@@ -1,12 +1,12 @@
 import mongoose from "mongoose";
-import { logger, LogType } from "./utils/logger";
-
+import { logger, LogType } from "../utils/logger";
+import config from "./config";
 export default class DB {
   private static bucket: any;
   constructor() {
     mongoose
       .connect(
-        "mongodb+srv://ArizWorld:Ariz.1234@mycluster.90knz.mongodb.net/blogposttest?retryWrites=true&w=majority"
+        `mongodb+srv://${config.mongoUsername}:${config.mongoPassword}@mycluster.90knz.mongodb.net/${config.testDb}?retryWrites=true&w=majority`
       )
       .then(() => {
         logger("connected to mongodb", LogType.success);

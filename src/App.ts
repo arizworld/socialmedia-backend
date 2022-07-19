@@ -4,7 +4,7 @@ import RouterBundler from "./RouterBudler";
 import { logger, LogType } from "./utils/logger";
 import defaultRoute from "./routes/defaultRoute";
 import userRoute from "./routes/user.router";
-import DB from "./db";
+import DB from "./config/db";
 import cookieParser from "cookie-parser";
 import postRoute from "./routes/post.router";
 import commentRoute from "./routes/comment.router";

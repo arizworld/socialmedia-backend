@@ -3,8 +3,6 @@ import { Request, Response, NextFunction } from "express";
 import sendEMail from "../utils/mailer";
 import catchAsyncErrors from "../utils/catchAsyncErrors";
 import ErrorHandler from "../utils/ErrorHandler";
-import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import sharp from "sharp";
 import UserServices from "../model/user.model";

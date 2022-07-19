@@ -2,9 +2,10 @@ import { GridFsStorage } from "multer-gridfs-storage";
 import multer from "multer";
 import { Request } from "express";
 import path from "path";
+import config from "../config/config";
 import ErrorHandler from "../utils/ErrorHandler";
 const storage = new GridFsStorage({
-  url: "mongodb+srv://ArizWorld:Ariz.1234@mycluster.90knz.mongodb.net/socialmedia?retryWrites=true&w=majority",
+  url: `mongodb+srv://${config.mongoUsername}:${config.mongoPassword}@mycluster.90knz.mongodb.net/${config.testDb}?retryWrites=true&w=majority`,
   file: (req: Request, file) => {
     return new Promise((resolve, reject) => {
       console.log({ file: file });

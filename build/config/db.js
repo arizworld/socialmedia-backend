@@ -5,11 +5,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.bucket = void 0;
 const mongoose_1 = __importDefault(require("mongoose"));
-const logger_1 = require("./utils/logger");
+const logger_1 = require("../utils/logger");
+const config_1 = __importDefault(require("./config"));
 class DB {
     constructor() {
         mongoose_1.default
-            .connect("mongodb+srv://ArizWorld:Ariz.1234@mycluster.90knz.mongodb.net/blogposttest?retryWrites=true&w=majority")
+            .connect(`mongodb+srv://${config_1.default.mongoUsername}:${config_1.default.mongoPassword}@mycluster.90knz.mongodb.net/${config_1.default.testDb}?retryWrites=true&w=majority`)
             .then(() => {
             (0, logger_1.logger)("connected to mongodb", logger_1.LogType.success);
         });
