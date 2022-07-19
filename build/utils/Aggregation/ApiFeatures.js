@@ -5,14 +5,6 @@ class ApiFeatures {
         this.pipeline = [];
         this.reqQuery = reqQuery;
     }
-    matchPostId(id) {
-        this.pipeline.push({
-            $match: {
-                postId: id,
-            },
-        });
-        return this;
-    }
     matchId(id) {
         this.pipeline.push({
             $match: {
@@ -80,7 +72,7 @@ class ApiFeatures {
         return this;
     }
     pagination() {
-        const requestPerPage = this.reqQuery.lt || 5;
+        const requestPerPage = Number(this.reqQuery.lt) || 5;
         const current = Number(this.reqQuery.page) || 1;
         const skip = (current - 1) * requestPerPage;
         this.pipeline.push({
@@ -88,25 +80,6 @@ class ApiFeatures {
         }, {
             $limit: requestPerPage,
         });
-        return this;
-    }
-    populateComments() {
-        this.pipeline.push({
-            $lookup: {
-                from: "comments",
-                localField: "_id",
-                foreignField: "postId",
-                as: "comments",
-            },
-        }
-        // {
-        //   $addFields: {
-        //     comments: {
-        //       $first: "$comments",
-        //     },
-        //   },
-        // }
-        );
         return this;
     }
 }

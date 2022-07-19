@@ -1,15 +1,15 @@
 import mongoose, { Query } from "mongoose";
 
-export default class ApiFeatures {
+export default abstract class ApiFeatures {
   pipeline: any = [];
   reqQuery: any;
   constructor(reqQuery: any) {
     this.reqQuery = reqQuery;
   }
-  matchPostId(id: mongoose.Types.ObjectId) {
+  matchId(id: mongoose.Types.ObjectId) {
     this.pipeline.push({
       $match: {
-        postId: id,
+        _id: id,
       },
     });
     return this;
@@ -19,10 +19,20 @@ export default class ApiFeatures {
     if (this.reqQuery.keyword) {
       this.pipeline.push({
         $match: {
-          title: {
-            $regex: this.reqQuery.keyword,
-            $options: "i",
-          },
+          $or: [
+            {
+              title: {
+                $regex: this.reqQuery.keyword,
+                $options: "i",
+              },
+            },
+            {
+              description: {
+                $regex: this.reqQuery.keyword,
+                $options: "i",
+              },
+            },
+          ],
         },
       });
       return this;
@@ -66,7 +76,7 @@ export default class ApiFeatures {
     return this;
   }
   pagination() {
-    const requestPerPage = this.reqQuery.lt || 5;
+    const requestPerPage = Number(this.reqQuery.lt) || 5;
     const current = Number(this.reqQuery.page) || 1;
     const skip = (current - 1) * requestPerPage;
     this.pipeline.push(
@@ -75,26 +85,6 @@ export default class ApiFeatures {
       },
       {
         $limit: requestPerPage,
-      }
-    );
-    return this;
-  }
-  populateOwner() {
-    this.pipeline.push(
-      {
-        $lookup: {
-          from: "users",
-          localField: "author",
-          foreignField: "_id",
-          as: "authordetails",
-        },
-      },
-      {
-        $addFields: {
-          authordetails: {
-            $first: "$authordetails",
-          },
-        },
       }
     );
     return this;

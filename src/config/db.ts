@@ -6,7 +6,7 @@ export default class DB {
   constructor() {
     mongoose
       .connect(
-        "mongodb+srv://ArizWorld:Ariz.1234@mycluster.90knz.mongodb.net/socialmedia?retryWrites=true&w=majority"
+        "mongodb+srv://ArizWorld:Ariz.1234@mycluster.90knz.mongodb.net/blogposttest?retryWrites=true&w=majority"
       )
       .then(() => {
         logger("connected to mongodb", LogType.success);

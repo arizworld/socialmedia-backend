@@ -8,7 +8,7 @@ import PostServices from "../model/post.model";
 import catchAsyncErrors from "../utils/catchAsyncErrors";
 import { Request, Response, NextFunction } from "express";
 import ErrorHandler from "../utils/ErrorHandler";
-import ApiFeatures from "../utils/ApiFeatures";
+import CommentAggregation from "../utils/Aggregation/CommentsAggregaion";
 export default class CommentController {
   getAllComments = catchAsyncErrors(async function (
     req: Request,
@@ -20,8 +20,9 @@ export default class CommentController {
     if (!post) {
       return next(new ErrorHandler(404, "Invalid request : post not found"));
     }
-    const pipeline = new ApiFeatures(req.query)
-      .matchPostId(post._id)
+    const pipeline = new CommentAggregation(req.query)
+      .match(post._id)
+      .structure()
       .customSort()
       .pagination().pipeline;
     const comments = await CommentServices.aggregate(pipeline);
@@ -30,26 +31,26 @@ export default class CommentController {
       comments,
     });
   });
-  getReplies = catchAsyncErrors(async function (
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ) {
-    const { id, cid } = req.params; //post id
-    const post = await PostServices.findById(id);
-    if (!post) {
-      return next(new ErrorHandler(404, "Invalid request : post not found"));
-    }
-    const comment = await CommentServices.findById(cid);
-    if (!comment) {
-      return next(new ErrorHandler(400, "No comment found"));
-    }
-    const comments = await CommentServices.find({ parentId: cid });
-    res.json({
-      success: true,
-      comments,
-    });
-  });
+  // getReplies = catchAsyncErrors(async function (
+  //   req: Request,
+  //   res: Response,
+  //   next: NextFunction
+  // ) {
+  //   const { id, cid } = req.params; //post id
+  //   const post = await PostServices.findById(id);
+  //   if (!post) {
+  //     return next(new ErrorHandler(404, "Invalid request : post not found"));
+  //   }
+  //   const comment = await CommentServices.findById(cid);
+  //   if (!comment) {
+  //     return next(new ErrorHandler(400, "No comment found"));
+  //   }
+  //   const comments = await CommentServices.find({ parentId: cid });
+  //   res.json({
+  //     success: true,
+  //     comments,
+  //   });
+  // });
 
   // get comment
   getComment = catchAsyncErrors(async function (
@@ -62,10 +63,14 @@ export default class CommentController {
     if (!post) {
       return next(new ErrorHandler(404, "Invalid request : post not found"));
     }
-    const comment = await CommentServices.findById(cid);
-    if (!comment) {
+    const commentExists = await CommentServices.findById(cid);
+    if (!commentExists) {
       return next(new ErrorHandler(400, "No comment found"));
     }
+    let pipeline = new CommentAggregation(null)
+      .matchId(commentExists._id)
+      .structure().pipeline;
+    let comment = await CommentServices.aggregate(pipeline);
     res.json({
       success: true,
       comment,

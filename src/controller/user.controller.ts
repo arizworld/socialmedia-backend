@@ -1,4 +1,4 @@
-import User from "../model/user.model";
+import User, { UserModel } from "../model/user.model";
 import { Request, Response, NextFunction } from "express";
 import sendEMail from "../utils/mailer";
 import catchAsyncErrors from "../utils/catchAsyncErrors";
@@ -7,6 +7,9 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import sharp from "sharp";
+import UserServices from "../model/user.model";
+import config from "../config/config";
+import UserAggregation from "../utils/Aggregation/UserAggregation";
 export default class UserController {
   signup = catchAsyncErrors(async function (
     req: Request,
@@ -14,13 +17,16 @@ export default class UserController {
     next: NextFunction
   ) {
     let { username, email, password } = req.body;
-    const user = await User.findOne({ email });
+    const user = await UserServices.findOne({ email });
     if (user) {
       return next(new ErrorHandler(400, "user already exists"));
     }
-    password = await bcrypt.hash(password, 10);
-    const newUser = await User.create({ username, email, password });
-    const token = jwt.sign({ id: newUser._id }, "secretKey");
+    const newUser: UserModel = await UserServices.create({
+      username,
+      email,
+      password,
+    });
+    const token = newUser.getToken();
     res.cookie("token", token, {
       maxAge: 1 * 24 * 60 * 60 * 1000,
       httpOnly: true,
@@ -34,15 +40,15 @@ export default class UserController {
     next: NextFunction
   ) {
     let { email, password } = req.body;
-    const user = await User.findOne({ email });
+    const user = await UserServices.findOne({ email });
     if (!user) {
       return next(new ErrorHandler(400, "Invalid Credentials"));
     }
-    const isvalidPassword = await bcrypt.compare(password, user.password);
+    const isvalidPassword = await user.comparePassword(password);
     if (!isvalidPassword) {
-      return next(new ErrorHandler(400, "Invalid Credentials"));
+      return next(new ErrorHandler(400, "Invalid password Credentials"));
     }
-    const token = jwt.sign({ id: user._id }, "secretKey");
+    const token = user.getToken();
     res.cookie("token", token, {
       maxAge: 1 * 24 * 60 * 60 * 1000,
       httpOnly: true,
@@ -73,7 +79,7 @@ export default class UserController {
     next: NextFunction
   ) {
     const userId = req.body.userID;
-    const user = await User.findByIdAndDelete(userId);
+    const user = await UserServices.delete(userId);
     if (!user) {
       return next(new ErrorHandler(400, "User not found"));
     }
@@ -92,18 +98,13 @@ export default class UserController {
         new ErrorHandler(400, "To find your account you must provide email")
       );
     }
-    const user = await User.findOne({ email });
+    const user = await UserServices.findOne({ email });
     if (!user) {
       return next(new ErrorHandler(400, "No user found"));
     }
     try {
-      const resetToken = crypto.randomBytes(20).toString("hex");
-      user.resetToken = crypto
-        .createHash("sha256")
-        .update(resetToken)
-        .digest("hex");
-      user.resetTokenExpire = Date.now() + 15 * 60 * 1000;
-      await user.save();
+      const resetToken = await user.getResetToken(config.resetDelay);
+      user.destroyResetToken(config.resetDelay);
       const resetUrl = `${req.protocol}://${req.get(
         "host"
       )}/user/resetpassword/${resetToken}`;
@@ -142,7 +143,7 @@ export default class UserController {
       return next(new ErrorHandler(400, "Invalid Request"));
     }
     const resetToken = crypto.createHash("sha256").update(token).digest("hex");
-    const user = await User.findOne({
+    const user = await UserServices.findOne({
       resetToken,
       resetTokenExpire: { $gt: Date.now() },
     });
@@ -154,13 +155,14 @@ export default class UserController {
         new ErrorHandler(400, "Password and confirm password must be same")
       );
     }
-    user.password = await bcrypt.hash(password, 10);
+
+    user.password = password;
     user.resetToken = undefined;
     user.resetTokenExpire = undefined;
     await user.save();
     res
       .status(200)
-      .json({ success: true, message: "please login to continue" });
+      .json({ success: true, user, message: "please login to continue" });
   });
 
   //   authentication required
@@ -171,7 +173,7 @@ export default class UserController {
   ) {
     try {
       const userId = req.body.userID;
-      const user = await User.findById(userId);
+      const user = await UserServices.findById(userId);
       if (!req.file) {
         return next(new ErrorHandler(400, "No file found"));
       }
@@ -184,7 +186,7 @@ export default class UserController {
         .toBuffer();
       user.image = {
         data: imageData,
-        url: `${req.baseUrl}/${userId}/avatar`,
+        url: `${req.protocol}://${req.get("host")}/user/${userId}/avatar`,
       };
       await user.save();
       res.status(200).json({ success: true, url: user.image.url });
@@ -230,5 +232,20 @@ export default class UserController {
     }
     res.setHeader("Content-Type", "image/png");
     res.status(200).send(user.image.data);
+  });
+  getUserSpecificPosts = catchAsyncErrors(async function (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) {
+    const { id } = req.params;
+    if (!id) {
+      return next(new ErrorHandler(400, "User id Required"));
+    }
+    let user = await UserServices.findById(id);
+    if (!user) {
+      return next(new ErrorHandler(400, "Invalid user id"));
+    }
+    const pipeline = new UserAggregation(null).matchId(user._id);
   });
 }

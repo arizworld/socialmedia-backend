@@ -10,6 +10,7 @@ const auth_middleware_1 = __importDefault(require("../middleware/auth.middleware
 const comment = new comment_controller_1.default();
 exports.default = [
     new RouterBudler_1.default("/post/:id/comment/all", RouterBudler_2.HTTPMethods.get, comment.getAllComments),
+    new RouterBudler_1.default("/post/:id/comment/:cid", RouterBudler_2.HTTPMethods.get, comment.getComment),
     new RouterBudler_1.default("/post/:id/comment/new", RouterBudler_2.HTTPMethods.post, comment.addComment, [auth_middleware_1.default]),
     new RouterBudler_1.default("/post/:id/comment/:cid", RouterBudler_2.HTTPMethods.put, comment.editComment, [auth_middleware_1.default]),
     new RouterBudler_1.default("/post/:id/comment/:cid", RouterBudler_2.HTTPMethods.del, comment.removeComment, [auth_middleware_1.default]),

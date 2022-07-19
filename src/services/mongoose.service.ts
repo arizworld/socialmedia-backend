@@ -65,28 +65,18 @@ export default class MongooseService<T, Tstructure> {
    * @param {object} [options] Optional options to provide query
    * @returns {Promise} Returns the results of the query
    */
-  findOne(
-    query: mongoose.QueryOptions,
-    projection = { __v: 0 },
-    options = { lean: true }
-  ) {
-    return this.model
-      .findOne(query, projection, options)
-      .select({ __v: 0 })
-      .exec();
+  findOne(query: mongoose.QueryOptions, options?: mongoose.QueryOptions) {
+    return this.model.findOne(query, options).exec();
   }
 
   /**
    * @description Retrieve a single document matching the provided ID, from the
    *   Model
    * @param id {string} Required: ID for the object to retrieve
-   * @param {object} [projection] Optional: Fields to return or not return from
-   * query
-   * @param {object} [options] Optional: options to provide query
    * @returns {Promise} Returns the results of the query
    */
-  findById(id: string, projection = { __v: 0 }, options = { lean: true }) {
-    return this.model.findById(id, projection, options).exec();
+  findById(id: string) {
+    return this.model.findById(id).exec();
   }
 
   /**

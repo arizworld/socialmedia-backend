@@ -1,10 +1,10 @@
 import mongoose, { ObjectId } from "mongoose";
 import { NextFunction, Request, Response } from "express";
-import { Like, PostModel, Media } from "../model/post.model";
+import { Like, LikeTypes, PostModel, Media } from "../model/post.model";
 import catchAsyncErrors from "../utils/catchAsyncErrors";
 import ErrorHandler from "../utils/ErrorHandler";
-import ApiFeatures from "../utils/ApiFeatures";
 import PostServices from "../model/post.model";
+import PostAggregation from "../utils/Aggregation/PostAggregation";
 
 interface CustomFileType extends Express.Multer.File {
   id: ObjectId;
@@ -104,10 +104,12 @@ export default class PostController {
     if (!id) {
       return next(new ErrorHandler(400, "Invalid request : post id required"));
     }
-    let post = await PostServices.findById(id);
-    if (!post) {
+    const postExists = await PostServices.findById(id);
+    if (!postExists) {
       return next(new ErrorHandler(404, "Invalid request : post not found"));
     }
+    let pipeline = new PostAggregation(null).matchId(postExists._id).pipeline;
+    const post = await PostServices.aggregate(pipeline);
     res.status(200).json({ success: true, post });
   });
   getAllPosts = catchAsyncErrors(async function (
@@ -115,12 +117,10 @@ export default class PostController {
     res: Response,
     next: NextFunction
   ) {
-    const requestPerPage = 5;
-    const pipeline = new ApiFeatures(req.query)
+    const pipeline = new PostAggregation(req.query)
       .search()
       .customSort()
-      .pagination()
-      .populateOwner().pipeline;
+      .pagination().pipeline;
 
     let posts: PostModel[] = await PostServices.aggregate(pipeline);
     if (!posts) {
@@ -184,5 +184,133 @@ export default class PostController {
           return next(new ErrorHandler(500, err.message));
         });
       });
+  });
+
+  addReaction = catchAsyncErrors(async function (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) {
+    const { id } = req.params;
+    let { reactionType } = req.body;
+    const author = req.body.userID;
+    const authorname = req.body.username;
+    if (!id) {
+      return next(new ErrorHandler(400, "post id required"));
+    }
+    let post = await PostServices.findById(id);
+    if (!post) {
+      return next(new ErrorHandler(400, "post not found"));
+    }
+    post = await PostServices.findOne({
+      _id: id,
+      "likes.authorId": author,
+    });
+    if (post) {
+      return next(new ErrorHandler(400, "author has already reacted"));
+    }
+    if (reactionType) {
+      let isValidType = Object.keys(LikeTypes).includes(reactionType);
+      if (!isValidType) {
+        return next(new ErrorHandler(400, "Invalid reaction Type"));
+      }
+    } else {
+      reactionType = LikeTypes.love;
+    }
+    post = await PostServices.partialUpdate(
+      { _id: id },
+      {
+        $push: {
+          likes: {
+            authorId: author,
+            authorname,
+            reactionType,
+          },
+        },
+        $inc: {
+          likecount: 1,
+        },
+      }
+    );
+    res.json({ sucess: true, post, message: `${reactionType} added ` });
+  });
+  updateReaction = catchAsyncErrors(async function (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) {
+    const { id } = req.params;
+    let { reactionType } = req.body;
+    const author = req.body.userID;
+    if (!id) {
+      return next(new ErrorHandler(400, "post id  required"));
+    }
+    let post = await PostServices.findById(id);
+    if (!post) {
+      return next(new ErrorHandler(400, "post not found"));
+    }
+
+    let isValidType = Object.keys(LikeTypes).includes(reactionType);
+    if (!isValidType) {
+      return next(new ErrorHandler(400, "Invalid reaction Type"));
+    }
+    post = await PostServices.findOne({
+      _id: id,
+      "likes.authorId": author,
+    });
+    if (!post) {
+      return next(new ErrorHandler(400, "No reaction found"));
+    }
+    post = await PostServices.partialUpdate(
+      {
+        _id: id,
+        "likes.authorId": author,
+      },
+      {
+        "likes.$.reactionType": reactionType,
+      }
+    );
+    res.json({ sucess: true, post, message: `${reactionType} added ` });
+  });
+  removeReaction = catchAsyncErrors(async function (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) {
+    const { id } = req.params;
+    let { reactionType } = req.body;
+    const author = req.body.userID;
+    if (!id) {
+      return next(new ErrorHandler(400, "post id required"));
+    }
+    let post = await PostServices.findById(id);
+    if (!post) {
+      return next(new ErrorHandler(400, "post not found"));
+    }
+    post = await PostServices.findOne({
+      _id: id,
+      "likes.authorId": author,
+    });
+    if (!post) {
+      return next(new ErrorHandler(400, "No reaction found"));
+    }
+    post = await PostServices.partialUpdate(
+      { _id: id },
+      {
+        $pull: {
+          likes: {
+            authorId: author,
+          },
+        },
+        $inc: {
+          likecount: -1,
+        },
+      }
+    );
+    res.json({
+      success: true,
+      post,
+      message: `${reactionType} removed`,
+    });
   });
 }

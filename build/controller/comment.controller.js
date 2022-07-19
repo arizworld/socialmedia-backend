@@ -39,7 +39,7 @@ const comments_model_1 = __importStar(require("../model/comments.model"));
 const post_model_1 = __importDefault(require("../model/post.model"));
 const catchAsyncErrors_1 = __importDefault(require("../utils/catchAsyncErrors"));
 const ErrorHandler_1 = __importDefault(require("../utils/ErrorHandler"));
-const ApiFeatures_1 = __importDefault(require("../utils/ApiFeatures"));
+const CommentsAggregaion_1 = __importDefault(require("../utils/Aggregation/CommentsAggregaion"));
 class CommentController {
     constructor() {
         this.getAllComments = (0, catchAsyncErrors_1.default)(function (req, res, next) {
@@ -49,8 +49,9 @@ class CommentController {
                 if (!post) {
                     return next(new ErrorHandler_1.default(404, "Invalid request : post not found"));
                 }
-                const pipeline = new ApiFeatures_1.default(req.query)
-                    .matchPostId(post._id)
+                const pipeline = new CommentsAggregaion_1.default(req.query)
+                    .match(post._id)
+                    .structure()
                     .customSort()
                     .pagination().pipeline;
                 const comments = yield comments_model_1.default.aggregate(pipeline);
@@ -60,24 +61,26 @@ class CommentController {
                 });
             });
         });
-        this.getReplies = (0, catchAsyncErrors_1.default)(function (req, res, next) {
-            return __awaiter(this, void 0, void 0, function* () {
-                const { id, cid } = req.params; //post id
-                const post = yield post_model_1.default.findById(id);
-                if (!post) {
-                    return next(new ErrorHandler_1.default(404, "Invalid request : post not found"));
-                }
-                const comment = yield comments_model_1.default.findById(cid);
-                if (!comment) {
-                    return next(new ErrorHandler_1.default(400, "No comment found"));
-                }
-                const comments = yield comments_model_1.default.find({ parentId: cid });
-                res.json({
-                    success: true,
-                    comments,
-                });
-            });
-        });
+        // getReplies = catchAsyncErrors(async function (
+        //   req: Request,
+        //   res: Response,
+        //   next: NextFunction
+        // ) {
+        //   const { id, cid } = req.params; //post id
+        //   const post = await PostServices.findById(id);
+        //   if (!post) {
+        //     return next(new ErrorHandler(404, "Invalid request : post not found"));
+        //   }
+        //   const comment = await CommentServices.findById(cid);
+        //   if (!comment) {
+        //     return next(new ErrorHandler(400, "No comment found"));
+        //   }
+        //   const comments = await CommentServices.find({ parentId: cid });
+        //   res.json({
+        //     success: true,
+        //     comments,
+        //   });
+        // });
         // get comment
         this.getComment = (0, catchAsyncErrors_1.default)(function (req, res, next) {
             return __awaiter(this, void 0, void 0, function* () {
@@ -86,10 +89,14 @@ class CommentController {
                 if (!post) {
                     return next(new ErrorHandler_1.default(404, "Invalid request : post not found"));
                 }
-                const comment = yield comments_model_1.default.findById(cid);
-                if (!comment) {
+                const commentExists = yield comments_model_1.default.findById(cid);
+                if (!commentExists) {
                     return next(new ErrorHandler_1.default(400, "No comment found"));
                 }
+                let pipeline = new CommentsAggregaion_1.default(null)
+                    .matchId(commentExists._id)
+                    .structure().pipeline;
+                let comment = yield comments_model_1.default.aggregate(pipeline);
                 res.json({
                     success: true,
                     comment,

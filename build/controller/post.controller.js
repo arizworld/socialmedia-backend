@@ -13,10 +13,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = __importDefault(require("mongoose"));
+const post_model_1 = require("../model/post.model");
 const catchAsyncErrors_1 = __importDefault(require("../utils/catchAsyncErrors"));
 const ErrorHandler_1 = __importDefault(require("../utils/ErrorHandler"));
-const ApiFeatures_1 = __importDefault(require("../utils/ApiFeatures"));
-const post_model_1 = __importDefault(require("../model/post.model"));
+const post_model_2 = __importDefault(require("../model/post.model"));
+const PostAggregation_1 = __importDefault(require("../utils/Aggregation/PostAggregation"));
 class PostController {
     constructor() {
         this.createPost = (0, catchAsyncErrors_1.default)(function (req, res, next) {
@@ -40,7 +41,7 @@ class PostController {
                 if (!author || !authorname) {
                     return next(new ErrorHandler_1.default(403, "author is required"));
                 }
-                const post = yield post_model_1.default.create({
+                const post = yield post_model_2.default.create({
                     title,
                     description,
                     author,
@@ -75,14 +76,14 @@ class PostController {
                 if (!id) {
                     return next(new ErrorHandler_1.default(400, "Invalid request : post id required"));
                 }
-                let post = yield post_model_1.default.findById(id);
+                let post = yield post_model_2.default.findById(id);
                 if (!post) {
                     return next(new ErrorHandler_1.default(404, "Invalid request : post not found"));
                 }
                 if (post.author.toString() !== author.toString()) {
                     return next(new ErrorHandler_1.default(403, "Cant update others post"));
                 }
-                const updatedPost = yield post_model_1.default.update(id, {
+                const updatedPost = yield post_model_2.default.update(id, {
                     title,
                     description,
                     tags,
@@ -100,22 +101,22 @@ class PostController {
                 if (!id) {
                     return next(new ErrorHandler_1.default(400, "Invalid request : post id required"));
                 }
-                let post = yield post_model_1.default.findById(id);
-                if (!post) {
+                const postExists = yield post_model_2.default.findById(id);
+                if (!postExists) {
                     return next(new ErrorHandler_1.default(404, "Invalid request : post not found"));
                 }
+                let pipeline = new PostAggregation_1.default(null).matchId(postExists._id).pipeline;
+                const post = yield post_model_2.default.aggregate(pipeline);
                 res.status(200).json({ success: true, post });
             });
         });
         this.getAllPosts = (0, catchAsyncErrors_1.default)(function (req, res, next) {
             return __awaiter(this, void 0, void 0, function* () {
-                const requestPerPage = 5;
-                const pipeline = new ApiFeatures_1.default(req.query)
+                const pipeline = new PostAggregation_1.default(req.query)
                     .search()
                     .customSort()
-                    .pagination()
-                    .populateOwner().pipeline;
-                let posts = yield post_model_1.default.aggregate(pipeline);
+                    .pagination().pipeline;
+                let posts = yield post_model_2.default.aggregate(pipeline);
                 if (!posts) {
                     return next(new ErrorHandler_1.default(404, "not post found"));
                 }
@@ -128,11 +129,11 @@ class PostController {
                 if (!id) {
                     return next(new ErrorHandler_1.default(400, "Invalid request : post id required"));
                 }
-                let post = yield post_model_1.default.findById(id);
+                let post = yield post_model_2.default.findById(id);
                 if (!post) {
                     return next(new ErrorHandler_1.default(404, "Invalid request : post not found"));
                 }
-                post = yield post_model_1.default.delete(id);
+                post = yield post_model_2.default.delete(id);
                 res.status(200).json({ success: true, post });
             });
         });
@@ -172,6 +173,118 @@ class PostController {
                     downloadStream.on("error", (err) => {
                         return next(new ErrorHandler_1.default(500, err.message));
                     });
+                });
+            });
+        });
+        this.addReaction = (0, catchAsyncErrors_1.default)(function (req, res, next) {
+            return __awaiter(this, void 0, void 0, function* () {
+                const { id } = req.params;
+                let { reactionType } = req.body;
+                const author = req.body.userID;
+                const authorname = req.body.username;
+                if (!id) {
+                    return next(new ErrorHandler_1.default(400, "post id required"));
+                }
+                let post = yield post_model_2.default.findById(id);
+                if (!post) {
+                    return next(new ErrorHandler_1.default(400, "post not found"));
+                }
+                post = yield post_model_2.default.findOne({
+                    _id: id,
+                    "likes.authorId": author,
+                });
+                if (post) {
+                    return next(new ErrorHandler_1.default(400, "author has already reacted"));
+                }
+                if (reactionType) {
+                    let isValidType = Object.keys(post_model_1.LikeTypes).includes(reactionType);
+                    if (!isValidType) {
+                        return next(new ErrorHandler_1.default(400, "Invalid reaction Type"));
+                    }
+                }
+                else {
+                    reactionType = post_model_1.LikeTypes.love;
+                }
+                post = yield post_model_2.default.partialUpdate({ _id: id }, {
+                    $push: {
+                        likes: {
+                            authorId: author,
+                            authorname,
+                            reactionType,
+                        },
+                    },
+                    $inc: {
+                        likecount: 1,
+                    },
+                });
+                res.json({ sucess: true, post, message: `${reactionType} added ` });
+            });
+        });
+        this.updateReaction = (0, catchAsyncErrors_1.default)(function (req, res, next) {
+            return __awaiter(this, void 0, void 0, function* () {
+                const { id } = req.params;
+                let { reactionType } = req.body;
+                const author = req.body.userID;
+                if (!id) {
+                    return next(new ErrorHandler_1.default(400, "post id  required"));
+                }
+                let post = yield post_model_2.default.findById(id);
+                if (!post) {
+                    return next(new ErrorHandler_1.default(400, "post not found"));
+                }
+                let isValidType = Object.keys(post_model_1.LikeTypes).includes(reactionType);
+                if (!isValidType) {
+                    return next(new ErrorHandler_1.default(400, "Invalid reaction Type"));
+                }
+                post = yield post_model_2.default.findOne({
+                    _id: id,
+                    "likes.authorId": author,
+                });
+                if (!post) {
+                    return next(new ErrorHandler_1.default(400, "No reaction found"));
+                }
+                post = yield post_model_2.default.partialUpdate({
+                    _id: id,
+                    "likes.authorId": author,
+                }, {
+                    "likes.$.reactionType": reactionType,
+                });
+                res.json({ sucess: true, post, message: `${reactionType} added ` });
+            });
+        });
+        this.removeReaction = (0, catchAsyncErrors_1.default)(function (req, res, next) {
+            return __awaiter(this, void 0, void 0, function* () {
+                const { id } = req.params;
+                let { reactionType } = req.body;
+                const author = req.body.userID;
+                if (!id) {
+                    return next(new ErrorHandler_1.default(400, "post id required"));
+                }
+                let post = yield post_model_2.default.findById(id);
+                if (!post) {
+                    return next(new ErrorHandler_1.default(400, "post not found"));
+                }
+                post = yield post_model_2.default.findOne({
+                    _id: id,
+                    "likes.authorId": author,
+                });
+                if (!post) {
+                    return next(new ErrorHandler_1.default(400, "No reaction found"));
+                }
+                post = yield post_model_2.default.partialUpdate({ _id: id }, {
+                    $pull: {
+                        likes: {
+                            authorId: author,
+                        },
+                    },
+                    $inc: {
+                        likecount: -1,
+                    },
+                });
+                res.json({
+                    success: true,
+                    post,
+                    message: `${reactionType} removed`,
                 });
             });
         });

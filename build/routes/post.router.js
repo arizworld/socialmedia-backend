@@ -22,4 +22,9 @@ exports.default = [
     ]),
     new RouterBudler_2.default("/post/:id", RouterBudler_1.HTTPMethods.del, post.deletePost),
     new RouterBudler_2.default("/post/:id/media", RouterBudler_1.HTTPMethods.get, post.streamFile),
+    new RouterBudler_2.default("/post/:id/reaction", RouterBudler_1.HTTPMethods.post, post.addReaction, [
+        auth_middleware_1.default,
+    ]),
+    new RouterBudler_2.default("/post/:id/reaction", RouterBudler_1.HTTPMethods.patch, post.updateReaction, [auth_middleware_1.default]),
+    new RouterBudler_2.default("/post/:id/reaction", RouterBudler_1.HTTPMethods.del, post.removeReaction, [auth_middleware_1.default]),
 ];

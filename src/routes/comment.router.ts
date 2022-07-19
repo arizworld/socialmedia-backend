@@ -10,6 +10,11 @@ export default [
     comment.getAllComments
   ),
   new RouterBundler(
+    "/post/:id/comment/:cid",
+    HTTPMethods.get,
+    comment.getComment
+  ),
+  new RouterBundler(
     "/post/:id/comment/new",
     HTTPMethods.post,
     comment.addComment,

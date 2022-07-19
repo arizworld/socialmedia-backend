@@ -16,22 +16,26 @@ const user_model_1 = __importDefault(require("../model/user.model"));
 const mailer_1 = __importDefault(require("../utils/mailer"));
 const catchAsyncErrors_1 = __importDefault(require("../utils/catchAsyncErrors"));
 const ErrorHandler_1 = __importDefault(require("../utils/ErrorHandler"));
-const bcrypt_1 = __importDefault(require("bcrypt"));
-const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const crypto_1 = __importDefault(require("crypto"));
 const sharp_1 = __importDefault(require("sharp"));
+const user_model_2 = __importDefault(require("../model/user.model"));
+const config_1 = __importDefault(require("../config/config"));
+const UserAggregation_1 = __importDefault(require("../utils/Aggregation/UserAggregation"));
 class UserController {
     constructor() {
         this.signup = (0, catchAsyncErrors_1.default)(function (req, res, next) {
             return __awaiter(this, void 0, void 0, function* () {
                 let { username, email, password } = req.body;
-                const user = yield user_model_1.default.findOne({ email });
+                const user = yield user_model_2.default.findOne({ email });
                 if (user) {
                     return next(new ErrorHandler_1.default(400, "user already exists"));
                 }
-                password = yield bcrypt_1.default.hash(password, 10);
-                const newUser = yield user_model_1.default.create({ username, email, password });
-                const token = jsonwebtoken_1.default.sign({ id: newUser._id }, "secretKey");
+                const newUser = yield user_model_2.default.create({
+                    username,
+                    email,
+                    password,
+                });
+                const token = newUser.getToken();
                 res.cookie("token", token, {
                     maxAge: 1 * 24 * 60 * 60 * 1000,
                     httpOnly: true,
@@ -42,15 +46,15 @@ class UserController {
         this.login = (0, catchAsyncErrors_1.default)(function (req, res, next) {
             return __awaiter(this, void 0, void 0, function* () {
                 let { email, password } = req.body;
-                const user = yield user_model_1.default.findOne({ email });
+                const user = yield user_model_2.default.findOne({ email });
                 if (!user) {
                     return next(new ErrorHandler_1.default(400, "Invalid Credentials"));
                 }
-                const isvalidPassword = yield bcrypt_1.default.compare(password, user.password);
+                const isvalidPassword = yield user.comparePassword(password);
                 if (!isvalidPassword) {
-                    return next(new ErrorHandler_1.default(400, "Invalid Credentials"));
+                    return next(new ErrorHandler_1.default(400, "Invalid password Credentials"));
                 }
-                const token = jsonwebtoken_1.default.sign({ id: user._id }, "secretKey");
+                const token = user.getToken();
                 res.cookie("token", token, {
                     maxAge: 1 * 24 * 60 * 60 * 1000,
                     httpOnly: true,
@@ -76,7 +80,7 @@ class UserController {
         this.deleteAccount = (0, catchAsyncErrors_1.default)(function (req, res, next) {
             return __awaiter(this, void 0, void 0, function* () {
                 const userId = req.body.userID;
-                const user = yield user_model_1.default.findByIdAndDelete(userId);
+                const user = yield user_model_2.default.delete(userId);
                 if (!user) {
                     return next(new ErrorHandler_1.default(400, "User not found"));
                 }
@@ -90,18 +94,13 @@ class UserController {
                 if (!email) {
                     return next(new ErrorHandler_1.default(400, "To find your account you must provide email"));
                 }
-                const user = yield user_model_1.default.findOne({ email });
+                const user = yield user_model_2.default.findOne({ email });
                 if (!user) {
                     return next(new ErrorHandler_1.default(400, "No user found"));
                 }
                 try {
-                    const resetToken = crypto_1.default.randomBytes(20).toString("hex");
-                    user.resetToken = crypto_1.default
-                        .createHash("sha256")
-                        .update(resetToken)
-                        .digest("hex");
-                    user.resetTokenExpire = Date.now() + 15 * 60 * 1000;
-                    yield user.save();
+                    const resetToken = yield user.getResetToken(config_1.default.resetDelay);
+                    user.destroyResetToken(config_1.default.resetDelay);
                     const resetUrl = `${req.protocol}://${req.get("host")}/user/resetpassword/${resetToken}`;
                     const subject = "Password Reset";
                     const message = `your password reset link for ${req.get("host")} \n\n is :- ${resetUrl} \n\n\ if you have not request this,please ignore`;
@@ -134,7 +133,7 @@ class UserController {
                     return next(new ErrorHandler_1.default(400, "Invalid Request"));
                 }
                 const resetToken = crypto_1.default.createHash("sha256").update(token).digest("hex");
-                const user = yield user_model_1.default.findOne({
+                const user = yield user_model_2.default.findOne({
                     resetToken,
                     resetTokenExpire: { $gt: Date.now() },
                 });
@@ -144,13 +143,13 @@ class UserController {
                 if (password !== confirmPassword) {
                     return next(new ErrorHandler_1.default(400, "Password and confirm password must be same"));
                 }
-                user.password = yield bcrypt_1.default.hash(password, 10);
+                user.password = password;
                 user.resetToken = undefined;
                 user.resetTokenExpire = undefined;
                 yield user.save();
                 res
                     .status(200)
-                    .json({ success: true, message: "please login to continue" });
+                    .json({ success: true, user, message: "please login to continue" });
             });
         });
         //   authentication required
@@ -158,7 +157,7 @@ class UserController {
             return __awaiter(this, void 0, void 0, function* () {
                 try {
                     const userId = req.body.userID;
-                    const user = yield user_model_1.default.findById(userId);
+                    const user = yield user_model_2.default.findById(userId);
                     if (!req.file) {
                         return next(new ErrorHandler_1.default(400, "No file found"));
                     }
@@ -171,7 +170,7 @@ class UserController {
                         .toBuffer();
                     user.image = {
                         data: imageData,
-                        url: `${req.baseUrl}/${userId}/avatar`,
+                        url: `${req.protocol}://${req.get("host")}/user/${userId}/avatar`,
                     };
                     yield user.save();
                     res.status(200).json({ success: true, url: user.image.url });
@@ -212,6 +211,19 @@ class UserController {
                 }
                 res.setHeader("Content-Type", "image/png");
                 res.status(200).send(user.image.data);
+            });
+        });
+        this.getUserSpecificPosts = (0, catchAsyncErrors_1.default)(function (req, res, next) {
+            return __awaiter(this, void 0, void 0, function* () {
+                const { id } = req.params;
+                if (!id) {
+                    return next(new ErrorHandler_1.default(400, "User id Required"));
+                }
+                let user = yield user_model_2.default.findById(id);
+                if (!user) {
+                    return next(new ErrorHandler_1.default(400, "Invalid user id"));
+                }
+                const pipeline = new UserAggregation_1.default(null).matchId(user._id);
             });
         });
     }

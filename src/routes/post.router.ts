@@ -18,4 +18,20 @@ export default [
   new RouterBundler("/post/:id", HTTPMethods.del, post.deletePost),
 
   new RouterBundler("/post/:id/media", HTTPMethods.get, post.streamFile),
+
+  new RouterBundler("/post/:id/reaction", HTTPMethods.post, post.addReaction, [
+    auth,
+  ]),
+  new RouterBundler(
+    "/post/:id/reaction",
+    HTTPMethods.patch,
+    post.updateReaction,
+    [auth]
+  ),
+  new RouterBundler(
+    "/post/:id/reaction",
+    HTTPMethods.del,
+    post.removeReaction,
+    [auth]
+  ),
 ];
