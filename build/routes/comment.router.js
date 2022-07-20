@@ -4,8 +4,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const comment_controller_1 = __importDefault(require("../controller/comment.controller"));
-const RouterBudler_1 = __importDefault(require("../RouterBudler"));
-const RouterBudler_2 = require("../RouterBudler");
+const RouterBudler_1 = __importDefault(require("../utils/Router/RouterBudler"));
+const RouterBudler_2 = require("../utils/Router/RouterBudler");
 const auth_middleware_1 = __importDefault(require("../middleware/auth.middleware"));
 const comment = new comment_controller_1.default();
 exports.default = [

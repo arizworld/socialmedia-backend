@@ -38,7 +38,14 @@ export default class MongooseService<T, Tstructure> {
   delete(id: string) {
     return this.model.findByIdAndDelete(id).exec();
   }
-
+  /**
+   * @description Delete an existing document on the Model
+   * @param id {string} ID for the object to delete
+   * @returns {Promise} Returns the results of the query
+   */
+  deleteMany(filter: mongoose.QueryOptions) {
+    return this.model.deleteMany(filter).exec();
+  }
   /**
    * @description Retrieve distinct "fields" which are in the provided status
    * @param query {object} Object that maps to the status to retrieve docs for

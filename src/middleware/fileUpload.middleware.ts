@@ -3,7 +3,7 @@ import multer from "multer";
 import { Request } from "express";
 import path from "path";
 import config from "../config/config";
-import ErrorHandler from "../utils/ErrorHandler";
+import ErrorHandler from "../utils/error/ErrorHandler";
 const storage = new GridFsStorage({
   url: `mongodb+srv://${config.mongoUsername}:${config.mongoPassword}@mycluster.90knz.mongodb.net/${config.testDb}?retryWrites=true&w=majority`,
   file: (req: Request, file) => {

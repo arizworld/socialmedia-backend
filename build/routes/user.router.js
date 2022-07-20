@@ -5,12 +5,14 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const user_controller_1 = __importDefault(require("../controller/user.controller"));
 const auth_middleware_1 = __importDefault(require("../middleware/auth.middleware"));
-const RouterBudler_1 = __importDefault(require("../RouterBudler"));
+const RouterBudler_1 = __importDefault(require("../utils/Router/RouterBudler"));
 const upload_middleware_1 = require("../middleware/upload.middleware");
-const RouterBudler_2 = require("../RouterBudler");
+const RouterBudler_2 = require("../utils/Router/RouterBudler");
 const bodyValidator_middleware_1 = __importDefault(require("../middleware/bodyValidator.middleware"));
 const user = new user_controller_1.default();
 exports.default = [
+    new RouterBudler_1.default("/user/all", RouterBudler_2.HTTPMethods.get, user.getAllUsers),
+    new RouterBudler_1.default("/user/:id", RouterBudler_2.HTTPMethods.get, user.getUser),
     new RouterBudler_1.default("/user", RouterBudler_2.HTTPMethods.post, user.signup, [bodyValidator_middleware_1.default]),
     new RouterBudler_1.default("/user/login", RouterBudler_2.HTTPMethods.post, user.login),
     new RouterBudler_1.default("/user/logout", RouterBudler_2.HTTPMethods.post, user.logout, [auth_middleware_1.default]),

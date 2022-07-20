@@ -1,4 +1,4 @@
-import ErrorHandler from "../utils/ErrorHandler";
+import ErrorHandler from "../utils/error/ErrorHandler";
 import { Request, Response, NextFunction } from "express";
 export const showError = () => {
   return (

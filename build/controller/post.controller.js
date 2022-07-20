@@ -14,10 +14,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = __importDefault(require("mongoose"));
 const post_model_1 = require("../model/post.model");
-const catchAsyncErrors_1 = __importDefault(require("../utils/catchAsyncErrors"));
-const ErrorHandler_1 = __importDefault(require("../utils/ErrorHandler"));
+const catchAsyncErrors_1 = __importDefault(require("../utils/error/catchAsyncErrors"));
+const ErrorHandler_1 = __importDefault(require("../utils/error/ErrorHandler"));
 const post_model_2 = __importDefault(require("../model/post.model"));
+const user_model_1 = __importDefault(require("../model/user.model"));
 const PostAggregation_1 = __importDefault(require("../utils/Aggregation/PostAggregation"));
+const comments_model_1 = __importDefault(require("../model/comments.model"));
 class PostController {
     constructor() {
         this.createPost = (0, catchAsyncErrors_1.default)(function (req, res, next) {
@@ -105,6 +107,7 @@ class PostController {
                 if (!postExists) {
                     return next(new ErrorHandler_1.default(404, "Invalid request : post not found"));
                 }
+                console.log(postExists._id);
                 let pipeline = new PostAggregation_1.default(null).matchId(postExists._id).pipeline;
                 const post = yield post_model_2.default.aggregate(pipeline);
                 res.status(200).json({ success: true, post });
@@ -114,6 +117,7 @@ class PostController {
             return __awaiter(this, void 0, void 0, function* () {
                 const pipeline = new PostAggregation_1.default(req.query)
                     .search()
+                    .filterTags()
                     .customSort()
                     .pagination().pipeline;
                 let posts = yield post_model_2.default.aggregate(pipeline);
@@ -121,6 +125,26 @@ class PostController {
                     return next(new ErrorHandler_1.default(404, "not post found"));
                 }
                 res.status(200).json({ success: true, posts });
+            });
+        });
+        this.getUserSpecificPosts = (0, catchAsyncErrors_1.default)(function (req, res, next) {
+            return __awaiter(this, void 0, void 0, function* () {
+                const { id } = req.params;
+                if (!id) {
+                    return next(new ErrorHandler_1.default(400, "User id Required"));
+                }
+                let userExists = yield user_model_1.default.findById(id);
+                if (!userExists) {
+                    return next(new ErrorHandler_1.default(400, "Invalid user id"));
+                }
+                const pipeline = new PostAggregation_1.default(req.query)
+                    .matchAuthor(userExists._id)
+                    .search()
+                    .filterTags()
+                    .customSort()
+                    .pagination().pipeline;
+                const user = yield user_model_1.default.aggregate(pipeline);
+                res.status(200).json({ success: true, user: user[0] });
             });
         });
         this.deletePost = (0, catchAsyncErrors_1.default)(function (req, res, next) {
@@ -134,6 +158,7 @@ class PostController {
                     return next(new ErrorHandler_1.default(404, "Invalid request : post not found"));
                 }
                 post = yield post_model_2.default.delete(id);
+                yield comments_model_1.default.deleteMany({ postId: post === null || post === void 0 ? void 0 : post._id });
                 res.status(200).json({ success: true, post });
             });
         });

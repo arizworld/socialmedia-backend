@@ -1,10 +1,12 @@
 import mongoose, { ObjectId } from "mongoose";
 import { NextFunction, Request, Response } from "express";
 import { Like, LikeTypes, PostModel, Media } from "../model/post.model";
-import catchAsyncErrors from "../utils/catchAsyncErrors";
-import ErrorHandler from "../utils/ErrorHandler";
+import catchAsyncErrors from "../utils/error/catchAsyncErrors";
+import ErrorHandler from "../utils/error/ErrorHandler";
 import PostServices from "../model/post.model";
+import UserServices from "../model/user.model";
 import PostAggregation from "../utils/Aggregation/PostAggregation";
+import CommentServices from "../model/comments.model";
 
 interface CustomFileType extends Express.Multer.File {
   id: ObjectId;
@@ -108,6 +110,7 @@ export default class PostController {
     if (!postExists) {
       return next(new ErrorHandler(404, "Invalid request : post not found"));
     }
+    console.log(postExists._id);
     let pipeline = new PostAggregation(null).matchId(postExists._id).pipeline;
     const post = await PostServices.aggregate(pipeline);
     res.status(200).json({ success: true, post });
@@ -119,6 +122,7 @@ export default class PostController {
   ) {
     const pipeline = new PostAggregation(req.query)
       .search()
+      .filterTags()
       .customSort()
       .pagination().pipeline;
 
@@ -128,6 +132,29 @@ export default class PostController {
     }
     res.status(200).json({ success: true, posts });
   });
+  getUserSpecificPosts = catchAsyncErrors(async function (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) {
+    const { id } = req.params;
+    if (!id) {
+      return next(new ErrorHandler(400, "User id Required"));
+    }
+    let userExists = await UserServices.findById(id);
+    if (!userExists) {
+      return next(new ErrorHandler(400, "Invalid user id"));
+    }
+    const pipeline = new PostAggregation(req.query)
+      .matchAuthor(userExists._id)
+      .search()
+      .filterTags()
+      .customSort()
+      .pagination().pipeline;
+    const user = await UserServices.aggregate(pipeline);
+    res.status(200).json({ success: true, user: user[0] });
+  });
+
   deletePost = catchAsyncErrors(async function (
     req: Request,
     res: Response,
@@ -142,6 +169,7 @@ export default class PostController {
       return next(new ErrorHandler(404, "Invalid request : post not found"));
     }
     post = await PostServices.delete(id);
+    await CommentServices.deleteMany({ postId: post?._id });
     res.status(200).json({ success: true, post });
   });
   streamFile = catchAsyncErrors(async function (

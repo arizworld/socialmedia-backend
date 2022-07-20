@@ -13,16 +13,26 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const App_1 = __importDefault(require("./App"));
+const config_1 = __importDefault(require("./config/config"));
 const logger_1 = require("./utils/logger");
 const mailer_1 = __importDefault(require("./utils/mailer"));
 // uncaught error
 process.on("uncaughtException", (err) => __awaiter(void 0, void 0, void 0, function* () {
-    (0, logger_1.logger)(err.message, logger_1.LogType.failure);
+    var _a, _b;
+    (0, logger_1.logger)(`${err.name +
+        "  " +
+        err.message +
+        "  " +
+        ((_a = err.stack) === null || _a === void 0 ? void 0 : _a.slice(err.stack.indexOf("at"), err.stack.indexOf(")")))}`, logger_1.LogType.failure);
     (0, logger_1.logger)("shutting down the server due to unhandled promise rejection", logger_1.LogType.failure);
     const isSent = yield (0, mailer_1.default)({
-        email: "aritrasadhukhan430@gmail.com",
+        email: config_1.default.ownerEmail,
         subject: "server shut down",
-        message: `shutting down the server due to uncaught exception ${err.message}`,
+        message: `shutting down the server due to uncaught exception ${err.name +
+            "  " +
+            err.message +
+            "  " +
+            ((_b = err.stack) === null || _b === void 0 ? void 0 : _b.slice(err.stack.indexOf("at"), err.stack.indexOf(")")))}`,
     });
     process.exit(1);
 }));
@@ -30,12 +40,17 @@ const app = new App_1.default();
 const server = app.listen(1020);
 // unhandled promise rejection
 process.on("unhandledRejection", (err) => __awaiter(void 0, void 0, void 0, function* () {
+    var _c;
     (0, logger_1.logger)(err.message, logger_1.LogType.failure);
     (0, logger_1.logger)("shutting down the server due to unhandled promise rejection", logger_1.LogType.failure);
     const isSent = yield (0, mailer_1.default)({
-        email: "aritrasadhukhan430@gmail.com",
+        email: config_1.default.ownerEmail,
         subject: "server shut down",
-        message: `shutting down the server due to unhandled promise rejection ${err.message}`,
+        message: `shutting down the server due to unhandled promise rejection ${err.name +
+            "  " +
+            err.message +
+            "  " +
+            ((_c = err.stack) === null || _c === void 0 ? void 0 : _c.slice(err.stack.indexOf("at"), err.stack.indexOf(")")))}`,
     });
     server.close(() => {
         process.exit(1);

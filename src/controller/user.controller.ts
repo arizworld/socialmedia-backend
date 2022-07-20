@@ -1,13 +1,15 @@
 import User, { UserModel } from "../model/user.model";
 import { Request, Response, NextFunction } from "express";
 import sendEMail from "../utils/mailer";
-import catchAsyncErrors from "../utils/catchAsyncErrors";
-import ErrorHandler from "../utils/ErrorHandler";
+import catchAsyncErrors from "../utils/error/catchAsyncErrors";
+import ErrorHandler from "../utils/error/ErrorHandler";
 import crypto from "crypto";
 import sharp from "sharp";
 import UserServices from "../model/user.model";
 import config from "../config/config";
 import UserAggregation from "../utils/Aggregation/UserAggregation";
+import PostServices, { PostModel } from "../model/post.model";
+import CommentServices from "../model/comments.model";
 export default class UserController {
   signup = catchAsyncErrors(async function (
     req: Request,
@@ -29,6 +31,7 @@ export default class UserController {
       maxAge: 1 * 24 * 60 * 60 * 1000,
       httpOnly: true,
     });
+    // delete newUser.password
     res.status(200).json({ success: true, user: newUser });
   });
 
@@ -81,6 +84,17 @@ export default class UserController {
     if (!user) {
       return next(new ErrorHandler(400, "User not found"));
     }
+    const posts = await PostServices.find({ author: user._id });
+    // delete all comments of that post
+    if (posts) {
+      posts.forEach(async (post: PostModel) => {
+        await CommentServices.deleteMany({ postId: post._id });
+      });
+    }
+    // delete all user post
+    await PostServices.deleteMany({ author: user._id });
+    // delete all comments of user
+    await CommentServices.deleteMany({ author: user._id });
     user.image = undefined;
     res.status(200).json({ success: true, user });
   });
@@ -231,19 +245,28 @@ export default class UserController {
     res.setHeader("Content-Type", "image/png");
     res.status(200).send(user.image.data);
   });
-  getUserSpecificPosts = catchAsyncErrors(async function (
+  getAllUsers = catchAsyncErrors(async function (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) {
+    const pipeline = new UserAggregation(req.query).pagination().pipeline;
+    const user = await UserServices.aggregate(pipeline);
+    res.status(200).json({ user });
+  });
+  getUser = catchAsyncErrors(async function (
     req: Request,
     res: Response,
     next: NextFunction
   ) {
     const { id } = req.params;
     if (!id) {
-      return next(new ErrorHandler(400, "User id Required"));
+      return next(new ErrorHandler(400, "user id is required"));
     }
-    let user = await UserServices.findById(id);
+    const user = await UserServices.findById(id);
     if (!user) {
-      return next(new ErrorHandler(400, "Invalid user id"));
+      return next(new ErrorHandler(400, "No user found"));
     }
-    const pipeline = new UserAggregation(null).matchId(user._id);
+    res.status(200).json({ user });
   });
 }

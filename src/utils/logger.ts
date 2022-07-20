@@ -7,7 +7,7 @@ export enum LogType {
 }
 export enum chalkColor {
   info = "blue",
-  failure = "red",
+  failure = "bgRed",
   success = "green",
   warning = "yellow",
 }
@@ -17,17 +17,26 @@ export const logger = function (message: string, logType: LogType) {
       const color = chalkColor[key as keyof typeof LogType];
       console.log(
         chalk[color].bold(`${key.toUpperCase()}:: `) +
-          chalk[color](message.toSentanceCase()) +
+          chalk[color](toSentanceCase(message)) +
           " At " +
-          chalk.white(new Date())
+          chalk.magentaBright(new Date().toLocaleString("en-IN")) +
+          "\n"
       );
     }
   }
 };
 
-String.prototype.toSentanceCase = function () {
-  return this.toLowerCase()
+const toSentanceCase = function (message: string) {
+  return message
+    .toLowerCase()
     .split(" ")
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(" ");
 };
+
+// String.prototype.toSentanceCase = function () {
+//   return this.toLowerCase()
+//     .split(" ")
+//     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+//     .join(" ");
+// };

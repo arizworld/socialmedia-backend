@@ -76,9 +76,17 @@ class ApiFeatures {
         const current = Number(this.reqQuery.page) || 1;
         const skip = (current - 1) * requestPerPage;
         this.pipeline.push({
-            $skip: skip,
-        }, {
-            $limit: requestPerPage,
+            $facet: {
+                Results: [
+                    {
+                        $skip: skip,
+                    },
+                    {
+                        $limit: requestPerPage,
+                    },
+                ],
+                totalResult: [{ $count: "count" }],
+            },
         });
         return this;
     }

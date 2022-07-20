@@ -4,7 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
-const AppRouter_1 = __importDefault(require("./AppRouter"));
+const AppRouter_1 = __importDefault(require("./utils/Router/AppRouter"));
 const logger_1 = require("./utils/logger");
 const defaultRoute_1 = __importDefault(require("./routes/defaultRoute"));
 const user_router_1 = __importDefault(require("./routes/user.router"));
@@ -13,6 +13,8 @@ const cookie_parser_1 = __importDefault(require("cookie-parser"));
 const post_router_1 = __importDefault(require("./routes/post.router"));
 const comment_router_1 = __importDefault(require("./routes/comment.router"));
 const error_middleware_1 = require("./middleware/error.middleware");
+const validateApiKey_middleware_1 = __importDefault(require("./middleware/validateApiKey.middleware"));
+const requestQueryValidators_1 = __importDefault(require("./middleware/requestQueryValidators"));
 class App {
     constructor() {
         this.app = (0, express_1.default)();
@@ -28,7 +30,7 @@ class App {
                 const { path, middlewares, controller, method } = route;
                 router[method](path, middlewares || [], controller);
             });
-            this.app.use(router);
+            this.app.use("/api/v1", validateApiKey_middleware_1.default, requestQueryValidators_1.default, router);
         });
     }
     initialzeDatabase() {

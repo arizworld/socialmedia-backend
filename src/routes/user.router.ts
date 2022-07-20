@@ -1,12 +1,14 @@
 import UserController from "../controller/user.controller";
 import auth from "../middleware/auth.middleware";
-import RouterBundler from "../RouterBudler";
+import RouterBundler from "../utils/Router/RouterBudler";
 import { upload } from "../middleware/upload.middleware";
-import { HTTPMethods } from "../RouterBudler";
+import { HTTPMethods } from "../utils/Router/RouterBudler";
 import bodyValidator from "../middleware/bodyValidator.middleware";
 const user = new UserController();
 
 export default [
+  new RouterBundler("/user/all", HTTPMethods.get, user.getAllUsers),
+  new RouterBundler("/user/:id", HTTPMethods.get, user.getUser),
   new RouterBundler("/user", HTTPMethods.post, user.signup, [bodyValidator]),
   new RouterBundler("/user/login", HTTPMethods.post, user.login),
   new RouterBundler("/user/logout", HTTPMethods.post, user.logout, [auth]),

@@ -1,6 +1,6 @@
 import express, { Request, Response } from "express";
-import AppRouter from "./AppRouter";
-import RouterBundler from "./RouterBudler";
+import AppRouter from "./utils/Router/AppRouter";
+import RouterBundler from "./utils/Router/RouterBudler";
 import { logger, LogType } from "./utils/logger";
 import defaultRoute from "./routes/defaultRoute";
 import userRoute from "./routes/user.router";
@@ -9,6 +9,8 @@ import cookieParser from "cookie-parser";
 import postRoute from "./routes/post.router";
 import commentRoute from "./routes/comment.router";
 import { showError } from "./middleware/error.middleware";
+import validateApiKey from "./middleware/validateApiKey.middleware";
+import requestQueryValidators from "./middleware/requestQueryValidators";
 export default class App {
   private app: express.Application;
   constructor() {
@@ -25,7 +27,7 @@ export default class App {
         const { path, middlewares, controller, method } = route;
         router[method](path, middlewares || [], controller);
       });
-      this.app.use(router);
+      this.app.use("/api/v1", validateApiKey, requestQueryValidators, router);
     });
   }
   private initialzeDatabase() {

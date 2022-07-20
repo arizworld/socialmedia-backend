@@ -1,13 +1,15 @@
 import nodemailer from "nodemailer";
+import config from "../config/config";
 interface MailOptions {
   email: string;
   subject: string;
   message: string;
 }
-// const nodemailer = require("nodemailer");
-const hostname = "smtp.gmail.com";
-const username = "nodetesting101@gmail.com";
-const password = "kvzwdcsadlptduoh";
+
+const { domainEmail, domainEmailPassowrd, emailHostServiceProvider } = config;
+const hostname = emailHostServiceProvider;
+const username = domainEmail;
+const password = domainEmailPassowrd;
 
 const transporter = nodemailer.createTransport({
   host: hostname,

@@ -38,6 +38,14 @@ class MongooseService {
         return this.model.findByIdAndDelete(id).exec();
     }
     /**
+     * @description Delete an existing document on the Model
+     * @param id {string} ID for the object to delete
+     * @returns {Promise} Returns the results of the query
+     */
+    deleteMany(filter) {
+        return this.model.deleteMany(filter).exec();
+    }
+    /**
      * @description Retrieve distinct "fields" which are in the provided status
      * @param query {object} Object that maps to the status to retrieve docs for
      * @param field {string} The distinct field to retrieve

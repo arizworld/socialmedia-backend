@@ -37,8 +37,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const comments_model_1 = __importStar(require("../model/comments.model"));
 const post_model_1 = __importDefault(require("../model/post.model"));
-const catchAsyncErrors_1 = __importDefault(require("../utils/catchAsyncErrors"));
-const ErrorHandler_1 = __importDefault(require("../utils/ErrorHandler"));
+const catchAsyncErrors_1 = __importDefault(require("../utils/error/catchAsyncErrors"));
+const ErrorHandler_1 = __importDefault(require("../utils/error/ErrorHandler"));
 const CommentsAggregaion_1 = __importDefault(require("../utils/Aggregation/CommentsAggregaion"));
 class CommentController {
     constructor() {
@@ -61,26 +61,6 @@ class CommentController {
                 });
             });
         });
-        // getReplies = catchAsyncErrors(async function (
-        //   req: Request,
-        //   res: Response,
-        //   next: NextFunction
-        // ) {
-        //   const { id, cid } = req.params; //post id
-        //   const post = await PostServices.findById(id);
-        //   if (!post) {
-        //     return next(new ErrorHandler(404, "Invalid request : post not found"));
-        //   }
-        //   const comment = await CommentServices.findById(cid);
-        //   if (!comment) {
-        //     return next(new ErrorHandler(400, "No comment found"));
-        //   }
-        //   const comments = await CommentServices.find({ parentId: cid });
-        //   res.json({
-        //     success: true,
-        //     comments,
-        //   });
-        // });
         // get comment
         this.getComment = (0, catchAsyncErrors_1.default)(function (req, res, next) {
             return __awaiter(this, void 0, void 0, function* () {
@@ -229,6 +209,7 @@ class CommentController {
                     return next(new ErrorHandler_1.default(403, "Cant delete others comments unless the post owners"));
                 }
                 comment = yield comments_model_1.default.delete(cid);
+                yield comments_model_1.default.deleteMany({ parentId: comment === null || comment === void 0 ? void 0 : comment._id });
                 res.status(200).json({
                     success: true,
                     comment,

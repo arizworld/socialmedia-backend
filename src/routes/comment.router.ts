@@ -1,6 +1,6 @@
 import CommentController from "../controller/comment.controller";
-import RouterBundler from "../RouterBudler";
-import { HTTPMethods } from "../RouterBudler";
+import RouterBundler from "../utils/Router/RouterBudler";
+import { HTTPMethods } from "../utils/Router/RouterBudler";
 import auth from "../middleware/auth.middleware";
 const comment = new CommentController();
 export default [

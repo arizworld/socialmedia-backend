@@ -5,9 +5,9 @@ import CommentServices, {
 } from "../model/comments.model";
 import mongoose, { ObjectId } from "mongoose";
 import PostServices from "../model/post.model";
-import catchAsyncErrors from "../utils/catchAsyncErrors";
+import catchAsyncErrors from "../utils/error/catchAsyncErrors";
 import { Request, Response, NextFunction } from "express";
-import ErrorHandler from "../utils/ErrorHandler";
+import ErrorHandler from "../utils/error/ErrorHandler";
 import CommentAggregation from "../utils/Aggregation/CommentsAggregaion";
 export default class CommentController {
   getAllComments = catchAsyncErrors(async function (
@@ -31,26 +31,6 @@ export default class CommentController {
       comments,
     });
   });
-  // getReplies = catchAsyncErrors(async function (
-  //   req: Request,
-  //   res: Response,
-  //   next: NextFunction
-  // ) {
-  //   const { id, cid } = req.params; //post id
-  //   const post = await PostServices.findById(id);
-  //   if (!post) {
-  //     return next(new ErrorHandler(404, "Invalid request : post not found"));
-  //   }
-  //   const comment = await CommentServices.findById(cid);
-  //   if (!comment) {
-  //     return next(new ErrorHandler(400, "No comment found"));
-  //   }
-  //   const comments = await CommentServices.find({ parentId: cid });
-  //   res.json({
-  //     success: true,
-  //     comments,
-  //   });
-  // });
 
   // get comment
   getComment = catchAsyncErrors(async function (
@@ -227,6 +207,7 @@ export default class CommentController {
       );
     }
     comment = await CommentServices.delete(cid);
+    await CommentServices.deleteMany({ parentId: comment?._id });
     res.status(200).json({
       success: true,
       comment,

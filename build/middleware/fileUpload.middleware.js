@@ -7,7 +7,7 @@ const multer_gridfs_storage_1 = require("multer-gridfs-storage");
 const multer_1 = __importDefault(require("multer"));
 const path_1 = __importDefault(require("path"));
 const config_1 = __importDefault(require("../config/config"));
-const ErrorHandler_1 = __importDefault(require("../utils/ErrorHandler"));
+const ErrorHandler_1 = __importDefault(require("../utils/error/ErrorHandler"));
 const storage = new multer_gridfs_storage_1.GridFsStorage({
     url: `mongodb+srv://${config_1.default.mongoUsername}:${config_1.default.mongoPassword}@mycluster.90knz.mongodb.net/${config_1.default.testDb}?retryWrites=true&w=majority`,
     file: (req, file) => {

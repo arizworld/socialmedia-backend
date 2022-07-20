@@ -14,21 +14,21 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const user_model_1 = __importDefault(require("../model/user.model"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
-const catchAsyncErrors_1 = __importDefault(require("../utils/catchAsyncErrors"));
-const ErrorHandler_1 = __importDefault(require("../utils/ErrorHandler"));
+const catchAsyncErrors_1 = __importDefault(require("../utils/error/catchAsyncErrors"));
+const ErrorHandler_1 = __importDefault(require("../utils/error/ErrorHandler"));
+const config_1 = __importDefault(require("../config/config"));
 exports.default = (0, catchAsyncErrors_1.default)(function (req, res, next) {
     return __awaiter(this, void 0, void 0, function* () {
         const { token } = req.cookies;
         if (!token) {
             return next(new ErrorHandler_1.default(401, "Please provide valid credentials"));
         }
-        const data = jsonwebtoken_1.default.verify(token, "secretKey");
+        const data = jsonwebtoken_1.default.verify(token, config_1.default.secretKey);
         if (typeof data === "object") {
             const user = yield user_model_1.default.findById(data.id);
             if (user) {
                 req.body.userID = user._id;
                 req.body.username = user.username;
-                console.log(user.username);
                 return next();
             }
             return next(new ErrorHandler_1.default(400, "Please provide valid credentials"));

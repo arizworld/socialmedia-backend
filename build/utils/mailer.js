@@ -13,10 +13,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const nodemailer_1 = __importDefault(require("nodemailer"));
-// const nodemailer = require("nodemailer");
-const hostname = "smtp.gmail.com";
-const username = "nodetesting101@gmail.com";
-const password = "kvzwdcsadlptduoh";
+const config_1 = __importDefault(require("../config/config"));
+const { domainEmail, domainEmailPassowrd, emailHostServiceProvider } = config_1.default;
+const hostname = emailHostServiceProvider;
+const username = domainEmail;
+const password = domainEmailPassowrd;
 const transporter = nodemailer_1.default.createTransport({
     host: hostname,
     port: 587,

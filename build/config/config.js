@@ -18,4 +18,9 @@ exports.default = {
     },
     secretKey: process.env.JWT_SECRET,
     resetDelay: 3 * 60 * 1000,
+    ownerEmail: process.env.OWNER_EMAIL,
+    domainEmail: process.env.DOMAIN_EMAIL,
+    domainEmailPassowrd: process.env.DOMAIN_EMAIL_PASSWORD,
+    emailHostServiceProvider: "smtp.gmail.com",
+    apiKey: "4fcc807ead48669c976b",
 };

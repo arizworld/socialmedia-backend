@@ -79,14 +79,19 @@ export default abstract class ApiFeatures {
     const requestPerPage = Number(this.reqQuery.lt) || 5;
     const current = Number(this.reqQuery.page) || 1;
     const skip = (current - 1) * requestPerPage;
-    this.pipeline.push(
-      {
-        $skip: skip,
+    this.pipeline.push({
+      $facet: {
+        Results: [
+          {
+            $skip: skip,
+          },
+          {
+            $limit: requestPerPage,
+          },
+        ],
+        totalResult: [{ $count: "count" }],
       },
-      {
-        $limit: requestPerPage,
-      }
-    );
+    });
     return this;
   }
 }

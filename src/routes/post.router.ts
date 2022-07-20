@@ -1,17 +1,25 @@
-import { HTTPMethods } from "./../RouterBudler";
+import { HTTPMethods } from "../utils/Router/RouterBudler";
 import PostController from "../controller/post.controller";
-import RouterBundler from "../RouterBudler";
+import RouterBundler from "../utils/Router/RouterBudler";
 import fileUpload from "../middleware/fileUpload.middleware";
 import auth from "../middleware/auth.middleware";
 const post = new PostController();
+// auth is used twice because in upload case req.body gets empty=> req.body.userId will be empty
 export default [
   new RouterBundler("/post/upload", HTTPMethods.post, post.createPost, [
+    auth,
     fileUpload.array("media"),
     auth,
   ]),
   new RouterBundler("/post/:id", HTTPMethods.get, post.getPost),
   new RouterBundler("/post", HTTPMethods.get, post.getAllPosts),
+  new RouterBundler(
+    "/user/:id/posts",
+    HTTPMethods.get,
+    post.getUserSpecificPosts
+  ),
   new RouterBundler("/post/:id", HTTPMethods.put, post.updatePost, [
+    auth,
     fileUpload.array("media"),
     auth,
   ]),

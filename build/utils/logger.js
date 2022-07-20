@@ -15,7 +15,7 @@ var LogType;
 var chalkColor;
 (function (chalkColor) {
     chalkColor["info"] = "blue";
-    chalkColor["failure"] = "red";
+    chalkColor["failure"] = "bgRed";
     chalkColor["success"] = "green";
     chalkColor["warning"] = "yellow";
 })(chalkColor = exports.chalkColor || (exports.chalkColor = {}));
@@ -24,16 +24,24 @@ const logger = function (message, logType) {
         if (logType === LogType[key]) {
             const color = chalkColor[key];
             console.log(chalk_1.default[color].bold(`${key.toUpperCase()}:: `) +
-                chalk_1.default[color](message.toSentanceCase()) +
+                chalk_1.default[color](toSentanceCase(message)) +
                 " At " +
-                chalk_1.default.white(new Date()));
+                chalk_1.default.magentaBright(new Date().toLocaleString("en-IN")) +
+                "\n");
         }
     }
 };
 exports.logger = logger;
-String.prototype.toSentanceCase = function () {
-    return this.toLowerCase()
+const toSentanceCase = function (message) {
+    return message
+        .toLowerCase()
         .split(" ")
         .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
         .join(" ");
 };
+// String.prototype.toSentanceCase = function () {
+//   return this.toLowerCase()
+//     .split(" ")
+//     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+//     .join(" ");
+// };

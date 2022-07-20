@@ -14,13 +14,15 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const user_model_1 = __importDefault(require("../model/user.model"));
 const mailer_1 = __importDefault(require("../utils/mailer"));
-const catchAsyncErrors_1 = __importDefault(require("../utils/catchAsyncErrors"));
-const ErrorHandler_1 = __importDefault(require("../utils/ErrorHandler"));
+const catchAsyncErrors_1 = __importDefault(require("../utils/error/catchAsyncErrors"));
+const ErrorHandler_1 = __importDefault(require("../utils/error/ErrorHandler"));
 const crypto_1 = __importDefault(require("crypto"));
 const sharp_1 = __importDefault(require("sharp"));
 const user_model_2 = __importDefault(require("../model/user.model"));
 const config_1 = __importDefault(require("../config/config"));
 const UserAggregation_1 = __importDefault(require("../utils/Aggregation/UserAggregation"));
+const post_model_1 = __importDefault(require("../model/post.model"));
+const comments_model_1 = __importDefault(require("../model/comments.model"));
 class UserController {
     constructor() {
         this.signup = (0, catchAsyncErrors_1.default)(function (req, res, next) {
@@ -40,6 +42,7 @@ class UserController {
                     maxAge: 1 * 24 * 60 * 60 * 1000,
                     httpOnly: true,
                 });
+                // delete newUser.password
                 res.status(200).json({ success: true, user: newUser });
             });
         });
@@ -84,6 +87,17 @@ class UserController {
                 if (!user) {
                     return next(new ErrorHandler_1.default(400, "User not found"));
                 }
+                const posts = yield post_model_1.default.find({ author: user._id });
+                // delete all comments of that post
+                if (posts) {
+                    posts.forEach((post) => __awaiter(this, void 0, void 0, function* () {
+                        yield comments_model_1.default.deleteMany({ postId: post._id });
+                    }));
+                }
+                // delete all user post
+                yield post_model_1.default.deleteMany({ author: user._id });
+                // delete all comments of user
+                yield comments_model_1.default.deleteMany({ author: user._id });
                 user.image = undefined;
                 res.status(200).json({ success: true, user });
             });
@@ -213,17 +227,24 @@ class UserController {
                 res.status(200).send(user.image.data);
             });
         });
-        this.getUserSpecificPosts = (0, catchAsyncErrors_1.default)(function (req, res, next) {
+        this.getAllUsers = (0, catchAsyncErrors_1.default)(function (req, res, next) {
+            return __awaiter(this, void 0, void 0, function* () {
+                const pipeline = new UserAggregation_1.default(req.query).pagination().pipeline;
+                const user = yield user_model_2.default.aggregate(pipeline);
+                res.status(200).json({ user });
+            });
+        });
+        this.getUser = (0, catchAsyncErrors_1.default)(function (req, res, next) {
             return __awaiter(this, void 0, void 0, function* () {
                 const { id } = req.params;
                 if (!id) {
-                    return next(new ErrorHandler_1.default(400, "User id Required"));
+                    return next(new ErrorHandler_1.default(400, "user id is required"));
                 }
-                let user = yield user_model_2.default.findById(id);
+                const user = yield user_model_2.default.findById(id);
                 if (!user) {
-                    return next(new ErrorHandler_1.default(400, "Invalid user id"));
+                    return next(new ErrorHandler_1.default(400, "No user found"));
                 }
-                const pipeline = new UserAggregation_1.default(null).matchId(user._id);
+                res.status(200).json({ user });
             });
         });
     }
