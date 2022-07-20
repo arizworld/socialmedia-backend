@@ -42,7 +42,9 @@ class UserController {
                     maxAge: 1 * 24 * 60 * 60 * 1000,
                     httpOnly: true,
                 });
-                // delete newUser.password
+                if (newUser.image) {
+                    newUser.image.data = undefined;
+                }
                 res.status(200).json({ success: true, user: newUser });
             });
         });
@@ -62,6 +64,9 @@ class UserController {
                     maxAge: 1 * 24 * 60 * 60 * 1000,
                     httpOnly: true,
                 });
+                if (user.image) {
+                    user.image.data = undefined;
+                }
                 res.status(200).json({ success: true, user });
             });
         });
@@ -229,7 +234,9 @@ class UserController {
         });
         this.getAllUsers = (0, catchAsyncErrors_1.default)(function (req, res, next) {
             return __awaiter(this, void 0, void 0, function* () {
-                const pipeline = new UserAggregation_1.default(req.query).pagination().pipeline;
+                const pipeline = new UserAggregation_1.default(req.query)
+                    .hideImageData()
+                    .pagination().pipeline;
                 const user = yield user_model_2.default.aggregate(pipeline);
                 res.status(200).json({ user });
             });
@@ -243,6 +250,9 @@ class UserController {
                 const user = yield user_model_2.default.findById(id);
                 if (!user) {
                     return next(new ErrorHandler_1.default(400, "No user found"));
+                }
+                if (user.image) {
+                    user.image.data = undefined;
                 }
                 res.status(200).json({ user });
             });

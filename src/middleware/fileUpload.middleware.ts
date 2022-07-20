@@ -8,7 +8,6 @@ const storage = new GridFsStorage({
   url: `mongodb+srv://${config.mongoUsername}:${config.mongoPassword}@mycluster.90knz.mongodb.net/${config.testDb}?retryWrites=true&w=majority`,
   file: (req: Request, file) => {
     return new Promise((resolve, reject) => {
-      console.log({ file: file });
       const fileTypes =
         /png|jpg|jpeg|JPEG|webp|gif|mp4|3gp|mkv|flv|mpg|avi|wav/;
       const mimetype = fileTypes.test(file.mimetype);

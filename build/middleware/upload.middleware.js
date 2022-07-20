@@ -7,13 +7,13 @@ exports.upload = void 0;
 const multer_1 = __importDefault(require("multer"));
 exports.upload = (0, multer_1.default)({
     limits: {
-        fileSize: 1000000 // 1000000 Bytes = 1 MB
+        fileSize: 1000000, // 1000000 Bytes = 1 MB
     },
     fileFilter(req, file, cb) {
-        if (!file.originalname.match(/\.(png|jpg)$/)) {
+        if (!file.originalname.match(/\.(png|jpg|jpeg|JPEG)$/)) {
             // upload only png and jpg format
-            return cb(new Error('Please upload a Image'));
+            return cb(new Error("This format is not supported"));
         }
         cb(null, true);
-    }
+    },
 });

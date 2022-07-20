@@ -31,7 +31,9 @@ export default class UserController {
       maxAge: 1 * 24 * 60 * 60 * 1000,
       httpOnly: true,
     });
-    // delete newUser.password
+    if (newUser.image) {
+      newUser.image.data = undefined;
+    }
     res.status(200).json({ success: true, user: newUser });
   });
 
@@ -54,6 +56,9 @@ export default class UserController {
       maxAge: 1 * 24 * 60 * 60 * 1000,
       httpOnly: true,
     });
+    if (user.image) {
+      user.image.data = undefined;
+    }
     res.status(200).json({ success: true, user });
   });
 
@@ -250,7 +255,9 @@ export default class UserController {
     res: Response,
     next: NextFunction
   ) {
-    const pipeline = new UserAggregation(req.query).pagination().pipeline;
+    const pipeline = new UserAggregation(req.query)
+      .hideImageData()
+      .pagination().pipeline;
     const user = await UserServices.aggregate(pipeline);
     res.status(200).json({ user });
   });
@@ -266,6 +273,9 @@ export default class UserController {
     const user = await UserServices.findById(id);
     if (!user) {
       return next(new ErrorHandler(400, "No user found"));
+    }
+    if (user.image) {
+      user.image.data = undefined;
     }
     res.status(200).json({ user });
   });

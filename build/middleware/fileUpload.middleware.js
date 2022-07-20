@@ -12,7 +12,6 @@ const storage = new multer_gridfs_storage_1.GridFsStorage({
     url: `mongodb+srv://${config_1.default.mongoUsername}:${config_1.default.mongoPassword}@mycluster.90knz.mongodb.net/${config_1.default.testDb}?retryWrites=true&w=majority`,
     file: (req, file) => {
         return new Promise((resolve, reject) => {
-            console.log({ file: file });
             const fileTypes = /png|jpg|jpeg|JPEG|webp|gif|mp4|3gp|mkv|flv|mpg|avi|wav/;
             const mimetype = fileTypes.test(file.mimetype);
             const extname = fileTypes.test(path_1.default.extname(file.originalname));

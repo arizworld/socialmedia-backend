@@ -8,7 +8,7 @@ export interface UserStructure {
   username: string;
   email: string;
   password: string;
-  image?: { data: Buffer; url: string };
+  image?: { data: Buffer | undefined; url: string };
   resetToken?: string;
   resetTokenExpire?: number;
 }

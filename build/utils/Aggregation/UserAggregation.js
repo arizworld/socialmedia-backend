@@ -8,6 +8,14 @@ class UserAggregation extends ApiFeatures_1.default {
     constructor(reqQuery) {
         super(reqQuery);
     }
+    hideImageData() {
+        this.pipeline.push({
+            $addFields: {
+                "image.data": undefined,
+            },
+        });
+        return this;
+    }
     populatePosts() {
         this.pipeline.push({
             $lookup: {
