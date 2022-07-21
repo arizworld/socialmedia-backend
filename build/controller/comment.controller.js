@@ -36,9 +36,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const comments_model_1 = __importStar(require("../model/comments.model"));
-const post_model_1 = __importDefault(require("../model/post.model"));
+// import error handlers
 const catchAsyncErrors_1 = __importDefault(require("../utils/error/catchAsyncErrors"));
 const ErrorHandler_1 = __importDefault(require("../utils/error/ErrorHandler"));
+// import services
+const post_model_1 = __importDefault(require("../model/post.model"));
 const CommentsAggregaion_1 = __importDefault(require("../utils/Aggregation/CommentsAggregaion"));
 class CommentController {
     constructor() {
@@ -47,17 +49,17 @@ class CommentController {
                 const { id } = req.params; //post id
                 const post = yield post_model_1.default.findById(id);
                 if (!post) {
-                    return next(new ErrorHandler_1.default(404, "Invalid request : post not found"));
+                    return next(new ErrorHandler_1.default(404, "POST_NOT_FOUND"));
                 }
                 const pipeline = new CommentsAggregaion_1.default(req.query)
                     .match(post._id)
                     .structure()
                     .customSort()
                     .pagination().pipeline;
-                const comments = yield comments_model_1.default.aggregate(pipeline);
+                const data = yield comments_model_1.default.aggregate(pipeline);
                 res.json({
                     success: true,
-                    comments,
+                    data,
                 });
             });
         });
@@ -67,11 +69,11 @@ class CommentController {
                 const { id, cid } = req.params; //post id
                 const post = yield post_model_1.default.findById(id);
                 if (!post) {
-                    return next(new ErrorHandler_1.default(404, "Invalid request : post not found"));
+                    return next(new ErrorHandler_1.default(404, "POST_NOT_FOUND"));
                 }
                 const commentExists = yield comments_model_1.default.findById(cid);
                 if (!commentExists) {
-                    return next(new ErrorHandler_1.default(400, "No comment found"));
+                    return next(new ErrorHandler_1.default(400, "COMMENT_NOT_FOUND"));
                 }
                 let pipeline = new CommentsAggregaion_1.default(null)
                     .matchId(commentExists._id)
@@ -91,7 +93,7 @@ class CommentController {
                 const { id } = req.params;
                 let { text, parentId } = req.body;
                 if (!text) {
-                    return next(new ErrorHandler_1.default(400, "Invalid request : comment cannot be empty"));
+                    return next(new ErrorHandler_1.default(400, "COMMENT_EMPTY"));
                 }
                 if (!parentId) {
                     parentId = null;
@@ -99,20 +101,20 @@ class CommentController {
                 else {
                     let validParentComment = yield comments_model_1.default.findById(parentId);
                     if (!validParentComment) {
-                        return next(new ErrorHandler_1.default(404, "invalid parentId"));
+                        return next(new ErrorHandler_1.default(404, "INVALID_PARENT_COMMENT"));
                     }
                 }
                 if (!id) {
-                    return next(new ErrorHandler_1.default(400, "Invalid request : post id required"));
+                    return next(new ErrorHandler_1.default(400, "INVALID_REQUEST"));
                 }
                 const author = req.body.userID;
                 const authorname = req.body.username;
                 if (!author || !authorname) {
-                    return next(new ErrorHandler_1.default(403, "Invalid resquest : cant do this task"));
+                    return next(new ErrorHandler_1.default(403, "FORBIDDEN"));
                 }
                 let post = yield post_model_1.default.findById(id);
                 if (!post) {
-                    return next(new ErrorHandler_1.default(404, "Invalid request : post not found"));
+                    return next(new ErrorHandler_1.default(404, "POST_NOT_FOUND"));
                 }
                 const postId = post._id;
                 const likes = [];
@@ -129,6 +131,7 @@ class CommentController {
                 res.status(200).json({
                     success: true,
                     comment,
+                    message: res.__("COMMENT_CREATED"),
                 });
             });
         });
@@ -140,40 +143,41 @@ class CommentController {
                 const { id, cid } = req.params;
                 let { text } = req.body;
                 if (!text) {
-                    return next(new ErrorHandler_1.default(400, "Invalid request : comment cannot be empty"));
+                    return next(new ErrorHandler_1.default(400, "COMMENT_EMPTY"));
                 }
                 if (!id) {
-                    return next(new ErrorHandler_1.default(400, "Invalid request : post id required"));
+                    return next(new ErrorHandler_1.default(400, "INVALID_REQUEST"));
                 }
                 if (!cid) {
-                    return next(new ErrorHandler_1.default(400, "Invalid request : comment id required"));
+                    return next(new ErrorHandler_1.default(400, "INVALID_REQUEST"));
                 }
                 // getting from auth middle ware
                 const author = req.body.userID;
                 const authorname = req.body.username;
                 if (!author) {
-                    return next(new ErrorHandler_1.default(403, "Invalid resquest : cant do this task"));
+                    return next(new ErrorHandler_1.default(403, "FORBIDDEN"));
                 }
                 let post = yield post_model_1.default.findById(id);
                 if (!post) {
-                    return next(new ErrorHandler_1.default(404, "Invalid request : post not found"));
+                    return next(new ErrorHandler_1.default(404, "POST_NOT_FOUND"));
                 }
                 let comment = yield comments_model_1.default.findById(cid);
                 if (!comment) {
-                    return next(new ErrorHandler_1.default(404, "Invalid request : comment not found"));
+                    return next(new ErrorHandler_1.default(404, "COMMENT_NOT_FOUND"));
                 }
                 if (post._id.toString() !== comment.postId.toString()) {
-                    return next(new ErrorHandler_1.default(401, "Invalid comment request to update"));
+                    return next(new ErrorHandler_1.default(403, "FORBIDDEN"));
                 }
                 const commentAuthor = comment.author.toString();
                 const requester = author.toString(); //the person who made the request
                 if (requester !== commentAuthor) {
-                    return next(new ErrorHandler_1.default(403, "Cant edit others comments"));
+                    return next(new ErrorHandler_1.default(403, "FORBIDDEN"));
                 }
                 comment = yield comments_model_1.default.update(cid, { text });
                 res.status(200).json({
                     success: true,
                     comment,
+                    message: res.__("COMMENT_UPDATE_SUCCESS"),
                 });
             });
         });
@@ -184,75 +188,71 @@ class CommentController {
                 // id = post id, cid = comment id
                 const { id, cid } = req.params;
                 if (!id) {
-                    return next(new ErrorHandler_1.default(400, "Invalid request : post id required"));
+                    return next(new ErrorHandler_1.default(400, "INVALID_REQUEST"));
                 }
                 // getting from auth middle ware
                 const author = req.body.userID;
                 if (!author) {
-                    return next(new ErrorHandler_1.default(403, "Invalid resquest : cant do this task"));
+                    return next(new ErrorHandler_1.default(403, "FORBIDDEN"));
                 }
                 let post = yield post_model_1.default.findById(id);
                 if (!post) {
-                    return next(new ErrorHandler_1.default(404, "Invalid request : post not found"));
+                    return next(new ErrorHandler_1.default(404, "POST_NOT_FOUND"));
                 }
                 let comment = yield comments_model_1.default.findById(cid);
                 if (!comment) {
-                    return next(new ErrorHandler_1.default(404, "Invalid request : comment not found"));
+                    return next(new ErrorHandler_1.default(404, "COMMENT_NOT_FOUND"));
                 }
                 if (post._id.toString() !== comment.postId.toString()) {
-                    return next(new ErrorHandler_1.default(401, "Invalid comment request to update"));
+                    return next(new ErrorHandler_1.default(401, "FORBIDDEN"));
                 }
                 const postAuthor = post.author.toString();
                 const commentAuthor = comment.author.toString();
                 const requester = author.toString(); //the person who made the request
                 if (!(requester === postAuthor || requester === commentAuthor)) {
-                    return next(new ErrorHandler_1.default(403, "Cant delete others comments unless the post owners"));
+                    return next(new ErrorHandler_1.default(403, "FORBIDDEN"));
                 }
                 comment = yield comments_model_1.default.delete(cid);
                 yield comments_model_1.default.deleteMany({ parentId: comment === null || comment === void 0 ? void 0 : comment._id });
                 res.status(200).json({
                     success: true,
                     comment,
+                    message: res.__("COMMENT_DELETE_SUCCESS"),
                 });
             });
         });
         // add reaction
         this.addReaction = (0, catchAsyncErrors_1.default)(function (req, res, next) {
             return __awaiter(this, void 0, void 0, function* () {
-                // if id and cid is valid
-                // if post and comment exists and comment is of that post
-                // case 1: author has no likes => add reaction with provided reaction type or default type.
-                // case 2: author has like and request has a reaction type => update the reaction type.
-                // case 3: auhtor has like and request is made with no reaction type => remove reaction.
                 const { id, cid } = req.params;
                 let { reactionType } = req.body;
                 const author = req.body.userID;
                 const authorname = req.body.username;
                 if (!id || !cid) {
-                    return next(new ErrorHandler_1.default(400, "post id and comment id is required"));
+                    return next(new ErrorHandler_1.default(400, "INVALID_REQUEST"));
                 }
                 let post = yield post_model_1.default.findById(id);
                 if (!post) {
-                    return next(new ErrorHandler_1.default(400, "post not found"));
+                    return next(new ErrorHandler_1.default(400, "POST_NOT_FOUND"));
                 }
                 let comment = yield comments_model_1.default.findById(cid);
                 if (!comment) {
-                    return next(new ErrorHandler_1.default(400, "no comments found"));
+                    return next(new ErrorHandler_1.default(400, "COMMENT_NOT_FOUND"));
                 }
                 if (comment.postId.toString() !== post._id.toString()) {
-                    return next(new ErrorHandler_1.default(400, "invalid request comment doesn't exist on following post"));
+                    return next(new ErrorHandler_1.default(400, "COMMENT_NOT_FOUND"));
                 }
                 comment = yield comments_model_1.default.findOne({
                     _id: cid,
                     "likes.authorId": author,
                 });
                 if (comment) {
-                    return next(new ErrorHandler_1.default(400, "author has already reacted"));
+                    return next(new ErrorHandler_1.default(400, "REACTION_EXISTS"));
                 }
                 if (reactionType) {
                     let isValidType = Object.keys(comments_model_1.LikeTypes).includes(reactionType);
                     if (!isValidType) {
-                        return next(new ErrorHandler_1.default(400, "Invalid reaction Type"));
+                        return next(new ErrorHandler_1.default(400, "INVALID_REACTION_TYPE"));
                     }
                 }
                 else {
@@ -270,7 +270,11 @@ class CommentController {
                         likecount: 1,
                     },
                 });
-                res.json({ sucess: true, comment, message: `${reactionType} added ` });
+                res.json({
+                    sucess: true,
+                    comment,
+                    message: `${reactionType} ${res.__("REACTION_ADDED")} `,
+                });
             });
         });
         this.updateReaction = (0, catchAsyncErrors_1.default)(function (req, res, next) {
@@ -279,29 +283,29 @@ class CommentController {
                 let { reactionType } = req.body;
                 const author = req.body.userID;
                 if (!id || !cid) {
-                    return next(new ErrorHandler_1.default(400, "post id and comment id is required"));
+                    return next(new ErrorHandler_1.default(400, "INVALID_REQUEST"));
                 }
                 let post = yield post_model_1.default.findById(id);
                 if (!post) {
-                    return next(new ErrorHandler_1.default(400, "post not found"));
+                    return next(new ErrorHandler_1.default(400, "POST_NOT_FOUND"));
                 }
                 let comment = yield comments_model_1.default.findById(cid);
                 if (!comment) {
-                    return next(new ErrorHandler_1.default(400, "no comments found"));
+                    return next(new ErrorHandler_1.default(400, "COMMENT_NOT_FOUND"));
                 }
                 if (comment.postId.toString() !== post._id.toString()) {
-                    return next(new ErrorHandler_1.default(400, "invalid request comment doesn't exist on following post"));
+                    return next(new ErrorHandler_1.default(400, "COMMENT_NOT_FOUND"));
                 }
                 let isValidType = Object.keys(comments_model_1.LikeTypes).includes(reactionType);
                 if (!isValidType) {
-                    return next(new ErrorHandler_1.default(400, "Invalid reaction Type"));
+                    return next(new ErrorHandler_1.default(400, "INVALID_REACTION_TYPE"));
                 }
                 comment = yield comments_model_1.default.findOne({
                     _id: cid,
                     "likes.authorId": author,
                 });
                 if (!comment) {
-                    return next(new ErrorHandler_1.default(400, "No reaction found"));
+                    return next(new ErrorHandler_1.default(400, "REACTION_NOT_FOUND"));
                 }
                 comment = yield comments_model_1.default.partialUpdate({
                     _id: cid,
@@ -309,7 +313,11 @@ class CommentController {
                 }, {
                     "likes.$.reactionType": reactionType,
                 });
-                res.json({ sucess: true, comment, message: `${reactionType} added ` });
+                res.json({
+                    sucess: true,
+                    comment,
+                    message: `${reactionType} ${res.__("REACTION_ADDED")} `,
+                });
             });
         });
         this.removeReaction = (0, catchAsyncErrors_1.default)(function (req, res, next) {
@@ -318,25 +326,25 @@ class CommentController {
                 let { reactionType } = req.body;
                 const author = req.body.userID;
                 if (!id || !cid) {
-                    return next(new ErrorHandler_1.default(400, "post id and comment id is required"));
+                    return next(new ErrorHandler_1.default(400, "INVALID_REQUEST"));
                 }
                 let post = yield post_model_1.default.findById(id);
                 if (!post) {
-                    return next(new ErrorHandler_1.default(400, "post not found"));
+                    return next(new ErrorHandler_1.default(400, "POST_NOT_FOUND"));
                 }
                 let comment = yield comments_model_1.default.findById(cid);
                 if (!comment) {
-                    return next(new ErrorHandler_1.default(400, "no comments found"));
+                    return next(new ErrorHandler_1.default(400, "COMMENT_NOT_FOUND"));
                 }
                 if (comment.postId.toString() !== post._id.toString()) {
-                    return next(new ErrorHandler_1.default(400, "invalid request comment doesn't exist on following post"));
+                    return next(new ErrorHandler_1.default(400, "COMMENT_NOT_FOUND"));
                 }
                 comment = yield comments_model_1.default.findOne({
                     _id: cid,
                     "likes.authorId": author,
                 });
                 if (!comment) {
-                    return next(new ErrorHandler_1.default(400, "No reaction found"));
+                    return next(new ErrorHandler_1.default(400, "REACTION_NOT_FOUND"));
                 }
                 comment = yield comments_model_1.default.partialUpdate({ _id: cid }, {
                     $pull: {
@@ -351,7 +359,7 @@ class CommentController {
                 res.json({
                     success: true,
                     comment,
-                    message: `${reactionType} removed`,
+                    message: `${reactionType} ${res.__("REACTION_REMOVED")}`,
                 });
             });
         });

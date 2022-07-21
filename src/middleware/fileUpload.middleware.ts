@@ -21,7 +21,7 @@ const storage = new GridFsStorage({
         };
         return resolve(fileInfo);
       }
-      reject(new ErrorHandler(400, "file type unsupported"));
+      reject(new ErrorHandler(400, "UNSUPPORTED_FILE_TYPE"));
     });
   },
 });

@@ -13,7 +13,7 @@ export default catchAsyncErrors(async function (
 ) {
   const { token } = req.cookies;
   if (!token) {
-    return next(new ErrorHandler(401, "Please provide valid credentials"));
+    return next(new ErrorHandler(400, "INVALID_REQUEST"));
   }
   const data = jwt.verify(token, config.secretKey);
   if (typeof data === "object") {
@@ -23,7 +23,7 @@ export default catchAsyncErrors(async function (
       req.body.username = user.username;
       return next();
     }
-    return next(new ErrorHandler(400, "Please provide valid credentials"));
+    return next(new ErrorHandler(400, "INVALID_CREDENTIALS"));
   }
-  next(new ErrorHandler(400, "Token not found"));
+  next(new ErrorHandler(400, "INVALID_CREDENTIALS"));
 });

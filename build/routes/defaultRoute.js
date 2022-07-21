@@ -7,6 +7,6 @@ const RouterBudler_1 = __importDefault(require("../utils/Router/RouterBudler"));
 const RouterBudler_2 = require("../utils/Router/RouterBudler");
 exports.default = [
     new RouterBudler_1.default("/", RouterBudler_2.HTTPMethods.get, (req, res) => {
-        res.send("hello Server");
+        res.send(res.__("hello"));
     }),
 ];

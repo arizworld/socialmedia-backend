@@ -14,12 +14,14 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = __importDefault(require("mongoose"));
 const post_model_1 = require("../model/post.model");
+// import error handlers
 const catchAsyncErrors_1 = __importDefault(require("../utils/error/catchAsyncErrors"));
 const ErrorHandler_1 = __importDefault(require("../utils/error/ErrorHandler"));
+// import Services
 const post_model_2 = __importDefault(require("../model/post.model"));
 const user_model_1 = __importDefault(require("../model/user.model"));
-const PostAggregation_1 = __importDefault(require("../utils/Aggregation/PostAggregation"));
 const comments_model_1 = __importDefault(require("../model/comments.model"));
+const PostAggregation_1 = __importDefault(require("../utils/Aggregation/PostAggregation"));
 class PostController {
     constructor() {
         this.createPost = (0, catchAsyncErrors_1.default)(function (req, res, next) {
@@ -41,7 +43,7 @@ class PostController {
                 const tags = req.body.tags || [];
                 const likes = [];
                 if (!author || !authorname) {
-                    return next(new ErrorHandler_1.default(403, "author is required"));
+                    return next(new ErrorHandler_1.default(403, "AUTHENTICATION_REQUIRED"));
                 }
                 const post = yield post_model_2.default.create({
                     title,
@@ -53,9 +55,11 @@ class PostController {
                     likes,
                 });
                 if (!post) {
-                    return next(new ErrorHandler_1.default(500, "post not created"));
+                    return next(new ErrorHandler_1.default(500, "POST_NOT_CREATED"));
                 }
-                res.status(200).json({ success: true, post });
+                res
+                    .status(200)
+                    .json({ success: true, post, message: res.__("POST_CREATED") });
             });
         });
         this.updatePost = (0, catchAsyncErrors_1.default)(function (req, res, next) {
@@ -76,14 +80,15 @@ class PostController {
                 const tags = req.body.tags || [];
                 const { id } = req.params;
                 if (!id) {
-                    return next(new ErrorHandler_1.default(400, "Invalid request : post id required"));
+                    return next(new ErrorHandler_1.default(400, "INVALID_REQUEST"));
                 }
                 let post = yield post_model_2.default.findById(id);
                 if (!post) {
-                    return next(new ErrorHandler_1.default(404, "Invalid request : post not found"));
+                    return next(new ErrorHandler_1.default(404, "POST_NOT_FOUND"));
                 }
+                // cant update others post
                 if (post.author.toString() !== author.toString()) {
-                    return next(new ErrorHandler_1.default(403, "Cant update others post"));
+                    return next(new ErrorHandler_1.default(403, "FORBIDDEN"));
                 }
                 const updatedPost = yield post_model_2.default.update(id, {
                     title,
@@ -92,24 +97,25 @@ class PostController {
                     media,
                 });
                 if (!updatedPost) {
-                    return next(new ErrorHandler_1.default(500, "post not updated"));
+                    return next(new ErrorHandler_1.default(500, "POST_UPDATE_FAILURE"));
                 }
-                res.status(200).json({ success: true, updatedPost });
+                res.status(200).json({
+                    success: true,
+                    updatedPost,
+                    message: res.__("POST_UPDATE_SUCCESS"),
+                });
             });
         });
         this.getPost = (0, catchAsyncErrors_1.default)(function (req, res, next) {
             return __awaiter(this, void 0, void 0, function* () {
                 const { id } = req.params;
                 if (!id) {
-                    return next(new ErrorHandler_1.default(400, "Invalid request : post id required"));
+                    return next(new ErrorHandler_1.default(400, "INVALID_REQUEST"));
                 }
-                const postExists = yield post_model_2.default.findById(id);
-                if (!postExists) {
-                    return next(new ErrorHandler_1.default(404, "Invalid request : post not found"));
+                const post = yield post_model_2.default.findById(id);
+                if (!post) {
+                    return next(new ErrorHandler_1.default(404, "POST_NOT_FOUND"));
                 }
-                console.log(postExists._id);
-                let pipeline = new PostAggregation_1.default(null).matchId(postExists._id).pipeline;
-                const post = yield post_model_2.default.aggregate(pipeline);
                 res.status(200).json({ success: true, post });
             });
         });
@@ -120,60 +126,62 @@ class PostController {
                     .filterTags()
                     .customSort()
                     .pagination().pipeline;
-                let posts = yield post_model_2.default.aggregate(pipeline);
-                if (!posts) {
-                    return next(new ErrorHandler_1.default(404, "not post found"));
-                }
-                res.status(200).json({ success: true, posts });
+                const data = yield post_model_2.default.aggregate(pipeline);
+                res.status(200).json({ success: true, data });
             });
         });
         this.getUserSpecificPosts = (0, catchAsyncErrors_1.default)(function (req, res, next) {
             return __awaiter(this, void 0, void 0, function* () {
                 const { id } = req.params;
                 if (!id) {
-                    return next(new ErrorHandler_1.default(400, "User id Required"));
+                    return next(new ErrorHandler_1.default(400, "INVALID_REQUEST"));
                 }
-                let userExists = yield user_model_1.default.findById(id);
-                if (!userExists) {
-                    return next(new ErrorHandler_1.default(400, "Invalid user id"));
+                let user = yield user_model_1.default.findById(id);
+                if (!user) {
+                    return next(new ErrorHandler_1.default(400, "USER_NOT_FOUND"));
                 }
                 const pipeline = new PostAggregation_1.default(req.query)
-                    .matchAuthor(userExists._id)
+                    .matchAuthor(user._id)
                     .search()
                     .filterTags()
                     .customSort()
                     .pagination().pipeline;
-                const user = yield user_model_1.default.aggregate(pipeline);
-                res.status(200).json({ success: true, user: user[0] });
+                const data = yield post_model_2.default.aggregate(pipeline);
+                res.status(200).json({ success: true, data: data });
             });
         });
         this.deletePost = (0, catchAsyncErrors_1.default)(function (req, res, next) {
             return __awaiter(this, void 0, void 0, function* () {
                 const { id } = req.params;
                 if (!id) {
-                    return next(new ErrorHandler_1.default(400, "Invalid request : post id required"));
+                    return next(new ErrorHandler_1.default(400, "INVALID_REQUEST"));
                 }
                 let post = yield post_model_2.default.findById(id);
                 if (!post) {
-                    return next(new ErrorHandler_1.default(404, "Invalid request : post not found"));
+                    return next(new ErrorHandler_1.default(404, "POST_NOT_FOUND"));
                 }
                 post = yield post_model_2.default.delete(id);
                 yield comments_model_1.default.deleteMany({ postId: post === null || post === void 0 ? void 0 : post._id });
-                res.status(200).json({ success: true, post });
+                res
+                    .status(200)
+                    .json({ success: true, post, message: res.__("POST_DELETE_SUCCESS") });
             });
         });
         this.streamFile = (0, catchAsyncErrors_1.default)(function (req, res, next) {
             return __awaiter(this, void 0, void 0, function* () {
                 const { id } = req.params;
                 if (!id) {
-                    return next(new ErrorHandler_1.default(400, "No Id found"));
+                    return next(new ErrorHandler_1.default(400, "INVALID_REQUEST"));
                 }
                 const range = req.headers.range || "0";
                 mongoose_1.default.connection.db
                     .collection("uploads.files")
                     .findOne({ _id: new mongoose_1.default.Types.ObjectId(id) }, (err, file) => {
+                    if (err) {
+                        return next(new ErrorHandler_1.default(500, "UNKNOWN_ERROR"));
+                    }
                     if (!file) {
-                        return next(new ErrorHandler_1.default(500, "No File found"));
+                        return next(new ErrorHandler_1.default(500, "FILE_NOT_FOUND"));
                     }
                     const fileSize = file.length;
                     const start = Number(range.replace(/\D/g, ""));
@@ -208,23 +216,23 @@ class PostController {
                 const author = req.body.userID;
                 const authorname = req.body.username;
                 if (!id) {
-                    return next(new ErrorHandler_1.default(400, "post id required"));
+                    return next(new ErrorHandler_1.default(400, "INVALID_REQUEST"));
                 }
                 let post = yield post_model_2.default.findById(id);
                 if (!post) {
-                    return next(new ErrorHandler_1.default(400, "post not found"));
+                    return next(new ErrorHandler_1.default(400, "POST_NOT_FOUND"));
                 }
                 post = yield post_model_2.default.findOne({
                     _id: id,
                     "likes.authorId": author,
                 });
                 if (post) {
-                    return next(new ErrorHandler_1.default(400, "author has already reacted"));
+                    return next(new ErrorHandler_1.default(400, "REACTION_EXISTS"));
                 }
                 if (reactionType) {
                     let isValidType = Object.keys(post_model_1.LikeTypes).includes(reactionType);
                     if (!isValidType) {
-                        return next(new ErrorHandler_1.default(400, "Invalid reaction Type"));
+                        return next(new ErrorHandler_1.default(400, "INVALID_REACTION_TYPE"));
                     }
                 }
                 else {
@@ -242,7 +250,11 @@ class PostController {
                         likecount: 1,
                     },
                 });
-                res.json({ sucess: true, post, message: `${reactionType} added ` });
+                res.json({
+                    sucess: true,
+                    post,
+                    message: `${reactionType} ${res.__("REACTION_ADDED")} `,
+                });
             });
         });
         this.updateReaction = (0, catchAsyncErrors_1.default)(function (req, res, next) {
@@ -251,22 +263,22 @@ class PostController {
                 let { reactionType } = req.body;
                 const author = req.body.userID;
                 if (!id) {
-                    return next(new ErrorHandler_1.default(400, "post id  required"));
+                    return next(new ErrorHandler_1.default(400, "INVALID_REQUEST"));
                 }
                 let post = yield post_model_2.default.findById(id);
                 if (!post) {
-                    return next(new ErrorHandler_1.default(400, "post not found"));
+                    return next(new ErrorHandler_1.default(400, "POST_NOT_FOUND"));
                 }
                 let isValidType = Object.keys(post_model_1.LikeTypes).includes(reactionType);
                 if (!isValidType) {
-                    return next(new ErrorHandler_1.default(400, "Invalid reaction Type"));
+                    return next(new ErrorHandler_1.default(400, "INVALID_REACTION_TYPE"));
                 }
                 post = yield post_model_2.default.findOne({
                     _id: id,
                     "likes.authorId": author,
                 });
                 if (!post) {
-                    return next(new ErrorHandler_1.default(400, "No reaction found"));
+                    return next(new ErrorHandler_1.default(400, "REACTION_NOT_FOUND"));
                 }
                 post = yield post_model_2.default.partialUpdate({
                     _id: id,
@@ -274,7 +286,11 @@ class PostController {
                 }, {
                     "likes.$.reactionType": reactionType,
                 });
-                res.json({ sucess: true, post, message: `${reactionType} added ` });
+                res.json({
+                    sucess: true,
+                    post,
+                    message: `${reactionType} ${res.__("REACTION_ADDED")} `,
+                });
             });
         });
         this.removeReaction = (0, catchAsyncErrors_1.default)(function (req, res, next) {
@@ -283,18 +299,18 @@ class PostController {
                 let { reactionType } = req.body;
                 const author = req.body.userID;
                 if (!id) {
-                    return next(new ErrorHandler_1.default(400, "post id required"));
+                    return next(new ErrorHandler_1.default(400, "INVALID_REQUEST"));
                 }
                 let post = yield post_model_2.default.findById(id);
                 if (!post) {
-                    return next(new ErrorHandler_1.default(400, "post not found"));
+                    return next(new ErrorHandler_1.default(400, "POST_NOT_FOUND"));
                 }
                 post = yield post_model_2.default.findOne({
                     _id: id,
                     "likes.authorId": author,
                 });
                 if (!post) {
-                    return next(new ErrorHandler_1.default(400, "No reaction found"));
+                    return next(new ErrorHandler_1.default(400, "REACTION_NOT_FOUND"));
                 }
                 post = yield post_model_2.default.partialUpdate({ _id: id }, {
                     $pull: {
@@ -309,7 +325,7 @@ class PostController {
                 res.json({
                     success: true,
                     post,
-                    message: `${reactionType} removed`,
+                    message: `${reactionType} ${res.__("REACTION_REMOVED")}`,
                 });
             });
         });

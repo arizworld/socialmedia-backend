@@ -8,7 +8,7 @@ const ErrorHandler_1 = __importDefault(require("../utils/error/ErrorHandler"));
 function default_1(req, res, next) {
     const { apikey } = req.query;
     if (apikey !== config_1.default.apiKey) {
-        return next(new ErrorHandler_1.default(403, "Invalid api key"));
+        return next(new ErrorHandler_1.default(403, "INAVLID_API_KEY"));
     }
     next();
 }

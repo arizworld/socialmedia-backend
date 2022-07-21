@@ -24,7 +24,7 @@ const storage = new multer_gridfs_storage_1.GridFsStorage({
                 };
                 return resolve(fileInfo);
             }
-            reject(new ErrorHandler_1.default(400, "file type unsupported"));
+            reject(new ErrorHandler_1.default(400, "UNSUPPORTED_FILE_TYPE"));
         });
     },
 });

@@ -10,11 +10,11 @@ export const showError = () => {
     // console.log(error, error.stack);
     const statusCode = error.statusCode ? error.statusCode : 500;
     if (error.name === "CastError") {
-      error.message = "Cast Error : Invalid Id format";
+      error.message = res.__("CAST_ERROR");
     }
     return res.status(statusCode).json({
       success: false,
-      message: error.message || error,
+      message: res.__(error.messageCode) || error.message,
     });
   };
 };

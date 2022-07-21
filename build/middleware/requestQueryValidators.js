@@ -11,12 +11,12 @@ function default_1(req, res, next) {
     const { query } = req;
     const queryCopy = Object.assign({}, query);
     if (queryCopy.srt && !(queryCopy.srt === "ml" || queryCopy.srt === "mr")) {
-        return next(new ErrorHandler_1.default(400, `Invalid value for srt: ${queryCopy.srt}`));
+        return next(new ErrorHandler_1.default(400, "", `Invalid value for srt: ${queryCopy.srt}`));
     }
     validQueries.forEach((q) => delete queryCopy[q]);
     const keys = Object.keys(queryCopy);
     if (keys.length) {
-        return next(new ErrorHandler_1.default(400, `Invalid query parameters : ${keys.join(",")}`));
+        return next(new ErrorHandler_1.default(400, "", `Invalid query parameters : ${keys.join(",")}`));
     }
     next();
 }

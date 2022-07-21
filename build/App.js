@@ -4,17 +4,22 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
+// import router utility
 const AppRouter_1 = __importDefault(require("./utils/Router/AppRouter"));
+// import middlewares
+const cookie_parser_1 = __importDefault(require("cookie-parser"));
+const internationalization_middleware_1 = __importDefault(require("./middleware/internationalization.middleware"));
+const requestQueryValidators_1 = __importDefault(require("./middleware/requestQueryValidators"));
+const validateApiKey_middleware_1 = __importDefault(require("./middleware/validateApiKey.middleware"));
+const error_middleware_1 = require("./middleware/error.middleware");
 const logger_1 = require("./utils/logger");
+// import database
+const db_1 = __importDefault(require("./config/db"));
+// import routes
 const defaultRoute_1 = __importDefault(require("./routes/defaultRoute"));
 const user_router_1 = __importDefault(require("./routes/user.router"));
-const db_1 = __importDefault(require("./config/db"));
-const cookie_parser_1 = __importDefault(require("cookie-parser"));
 const post_router_1 = __importDefault(require("./routes/post.router"));
 const comment_router_1 = __importDefault(require("./routes/comment.router"));
-const error_middleware_1 = require("./middleware/error.middleware");
-const validateApiKey_middleware_1 = __importDefault(require("./middleware/validateApiKey.middleware"));
-const requestQueryValidators_1 = __importDefault(require("./middleware/requestQueryValidators"));
 class App {
     constructor() {
         this.app = (0, express_1.default)();
@@ -40,6 +45,7 @@ class App {
         this.app.use(express_1.default.json());
         this.app.use(express_1.default.urlencoded({ extended: false }));
         this.app.use((0, cookie_parser_1.default)());
+        this.app.use(internationalization_middleware_1.default.init);
     }
     initializeErrorHandler() {
         this.app.use((0, error_middleware_1.showError)());

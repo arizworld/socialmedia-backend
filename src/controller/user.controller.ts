@@ -1,15 +1,19 @@
-import User, { UserModel } from "../model/user.model";
 import { Request, Response, NextFunction } from "express";
-import sendEMail from "../utils/mailer";
+import { UserModel } from "../model/user.model";
+// import error handlers
 import catchAsyncErrors from "../utils/error/catchAsyncErrors";
 import ErrorHandler from "../utils/error/ErrorHandler";
+// import utils
+import sendEMail from "../utils/mailer";
 import crypto from "crypto";
 import sharp from "sharp";
-import UserServices from "../model/user.model";
 import config from "../config/config";
+// import services
+import UserServices from "../model/user.model";
 import UserAggregation from "../utils/Aggregation/UserAggregation";
 import PostServices, { PostModel } from "../model/post.model";
 import CommentServices from "../model/comments.model";
+
 export default class UserController {
   signup = catchAsyncErrors(async function (
     req: Request,
@@ -19,7 +23,7 @@ export default class UserController {
     let { username, email, password } = req.body;
     const user = await UserServices.findOne({ email });
     if (user) {
-      return next(new ErrorHandler(400, "user already exists"));
+      return next(new ErrorHandler(400, "USER_EXISTS"));
     }
     const newUser: UserModel = await UserServices.create({
       username,
@@ -34,7 +38,9 @@ export default class UserController {
     if (newUser.image) {
       newUser.image.data = undefined;
     }
-    res.status(200).json({ success: true, user: newUser });
+    res
+      .status(200)
+      .json({ success: true, user: newUser, message: res.__("USER_CREATED") });
   });
 
   login = catchAsyncErrors(async function (
@@ -45,11 +51,11 @@ export default class UserController {
     let { email, password } = req.body;
     const user = await UserServices.findOne({ email });
     if (!user) {
-      return next(new ErrorHandler(400, "Invalid Credentials"));
+      return next(new ErrorHandler(400, "INVALID_CREDENTIALS"));
     }
     const isvalidPassword = await user.comparePassword(password);
     if (!isvalidPassword) {
-      return next(new ErrorHandler(400, "Invalid password Credentials"));
+      return next(new ErrorHandler(400, "INVALID_CREDENTIALS"));
     }
     const token = user.getToken();
     res.cookie("token", token, {
@@ -59,7 +65,11 @@ export default class UserController {
     if (user.image) {
       user.image.data = undefined;
     }
-    res.status(200).json({ success: true, user });
+    res.status(200).json({
+      success: true,
+      user,
+      message: `${res.__("USER_LOGIN")} ${user.username}`,
+    });
   });
 
   //   authentication required
@@ -70,13 +80,15 @@ export default class UserController {
   ) {
     const { token } = req.cookies;
     if (!token) {
-      return next(new ErrorHandler(401, "Please login first"));
+      return next(new ErrorHandler(401, "UNAUTHORISED"));
     }
     res.cookie("token", "", {
       maxAge: 1,
       httpOnly: true,
     });
-    res.status(200).json({ success: true, message: "See You soon" });
+    res
+      .status(200)
+      .json({ success: true, message: `${res.__("USER_LOGOUT")}` });
   });
   //   authentication required
   deleteAccount = catchAsyncErrors(async function (
@@ -87,7 +99,7 @@ export default class UserController {
     const userId = req.body.userID;
     const user = await UserServices.delete(userId);
     if (!user) {
-      return next(new ErrorHandler(400, "User not found"));
+      return next(new ErrorHandler(400, "USER_NOT_FOUND"));
     }
     const posts = await PostServices.find({ author: user._id });
     // delete all comments of that post
@@ -101,7 +113,11 @@ export default class UserController {
     // delete all comments of user
     await CommentServices.deleteMany({ author: user._id });
     user.image = undefined;
-    res.status(200).json({ success: true, user });
+    res.status(200).json({
+      success: true,
+      user,
+      message: `${res.__("USER_DELETED")} ${user.username}`,
+    });
   });
 
   forgetPassword = catchAsyncErrors(async function (
@@ -111,9 +127,7 @@ export default class UserController {
   ) {
     const { email } = req.body;
     if (!email) {
-      return next(
-        new ErrorHandler(400, "To find your account you must provide email")
-      );
+      return next(new ErrorHandler(400, "EMPTY_EMAIL"));
     }
     const user = await UserServices.findOne({ email });
     if (!user) {
@@ -134,10 +148,10 @@ export default class UserController {
         return res.status(200).json({
           success: true,
           resetToken,
-          message: "if not found in primary checkout spam fodler",
+          message: res.__("EMAIL_SENT_SUCCESS"),
         });
       }
-      return next(new ErrorHandler(500, "Mail not sent try again later"));
+      return next(new ErrorHandler(500, "EMAIL_SENT_FAILURE"));
     } catch (error) {
       user.resetToken = undefined;
       user.resetTokenExpire = undefined;
@@ -145,7 +159,7 @@ export default class UserController {
       if (error instanceof Error) {
         return next(new ErrorHandler(500, error.message));
       }
-      next(new ErrorHandler(500, "Unknown Error occured"));
+      next(new ErrorHandler(500, "UNKNOWN_ERROR"));
     }
   });
 
@@ -157,7 +171,7 @@ export default class UserController {
     const { token } = req.params;
     const { password, confirmPassword } = req.body;
     if (!token) {
-      return next(new ErrorHandler(400, "Invalid Request"));
+      return next(new ErrorHandler(400, "INVALID_REQUEST"));
     }
     const resetToken = crypto.createHash("sha256").update(token).digest("hex");
     const user = await UserServices.findOne({
@@ -165,12 +179,10 @@ export default class UserController {
       resetTokenExpire: { $gt: Date.now() },
     });
     if (!user) {
-      return next(new ErrorHandler(401, "Invalid Token"));
+      return next(new ErrorHandler(401, "INVALID_TOKEN"));
     }
     if (password !== confirmPassword) {
-      return next(
-        new ErrorHandler(400, "Password and confirm password must be same")
-      );
+      return next(new ErrorHandler(400, "PASSWORD_UNMATCHED"));
     }
 
     user.password = password;
@@ -179,7 +191,7 @@ export default class UserController {
     await user.save();
     res
       .status(200)
-      .json({ success: true, user, message: "please login to continue" });
+      .json({ success: true, user, message: res.__("PASSWORD_RESET_SUCCESS") });
   });
 
   //   authentication required
@@ -192,10 +204,10 @@ export default class UserController {
       const userId = req.body.userID;
       const user = await UserServices.findById(userId);
       if (!req.file) {
-        return next(new ErrorHandler(400, "No file found"));
+        return next(new ErrorHandler(400, "FILE_NOT_FOUND"));
       }
       if (!user) {
-        return next(new ErrorHandler(400, "No user found"));
+        return next(new ErrorHandler(400, "USER_NOT_FOUND"));
       }
       const imageData = await sharp(req.file.buffer)
         .png()
@@ -206,12 +218,16 @@ export default class UserController {
         url: `${req.protocol}://${req.get("host")}/user/${userId}/avatar`,
       };
       await user.save();
-      res.status(200).json({ success: true, url: user.image.url });
+      res.status(200).json({
+        success: true,
+        url: user.image.url,
+        message: res.__("PROFILE_PIC_SET_SUCCESS"),
+      });
     } catch (error) {
       if (error instanceof Error) {
         return next(new ErrorHandler(500, error.message));
       }
-      next(new ErrorHandler(500, "Unknown Error occured"));
+      next(new ErrorHandler(500, "UNKNOWN_ERROR"));
     }
   });
 
@@ -222,13 +238,15 @@ export default class UserController {
     next: NextFunction
   ) {
     const userId = req.body.userID;
-    const user = await User.findById(userId);
+    const user = await UserServices.findById(userId);
     if (!user) {
-      return next(new ErrorHandler(400, "No user found"));
+      return next(new ErrorHandler(400, "USER_NOT_FOUND"));
     }
     user.image = undefined;
     await user.save();
-    res.status(200).json({ success: true });
+    res
+      .status(200)
+      .json({ success: true, message: res.__("PROFILE_PIC_REMOVE_SUCCESS") });
   });
 
   showProfilePic = catchAsyncErrors(async function (
@@ -238,14 +256,14 @@ export default class UserController {
   ) {
     const { id } = req.params;
     if (!id) {
-      return next(new ErrorHandler(400, "Invalid request"));
+      return next(new ErrorHandler(400, "INVALID_REQUEST"));
     }
-    const user = await User.findById(id);
+    const user = await UserServices.findById(id);
     if (!user) {
-      return next(new ErrorHandler(400, "No user found"));
+      return next(new ErrorHandler(400, "USER_NOT_FOUND"));
     }
     if (!user.image) {
-      return next(new ErrorHandler(400, "please set profile pic first"));
+      return next(new ErrorHandler(400, "PROFILE_PIC_NOT_FOUND"));
     }
     res.setHeader("Content-Type", "image/png");
     res.status(200).send(user.image.data);
@@ -258,8 +276,8 @@ export default class UserController {
     const pipeline = new UserAggregation(req.query)
       .hideImageData()
       .pagination().pipeline;
-    const user = await UserServices.aggregate(pipeline);
-    res.status(200).json({ user });
+    const data = await UserServices.aggregate(pipeline);
+    res.status(200).json({ success: true, data });
   });
   getUser = catchAsyncErrors(async function (
     req: Request,
@@ -268,15 +286,15 @@ export default class UserController {
   ) {
     const { id } = req.params;
     if (!id) {
-      return next(new ErrorHandler(400, "user id is required"));
+      return next(new ErrorHandler(400, "INVALID_REQUEST"));
     }
     const user = await UserServices.findById(id);
     if (!user) {
-      return next(new ErrorHandler(400, "No user found"));
+      return next(new ErrorHandler(400, "USER_NOT_FOUND"));
     }
     if (user.image) {
       user.image.data = undefined;
     }
-    res.status(200).json({ user });
+    res.status(200).json({ success: true, user });
   });
 }

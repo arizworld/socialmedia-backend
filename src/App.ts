@@ -1,16 +1,22 @@
-import express, { Request, Response } from "express";
+import express from "express";
+// import router utility
 import AppRouter from "./utils/Router/AppRouter";
 import RouterBundler from "./utils/Router/RouterBudler";
+// import middlewares
+import cookieParser from "cookie-parser";
+import i18n from "./middleware/internationalization.middleware";
+import requestQueryValidators from "./middleware/requestQueryValidators";
+import validateApiKey from "./middleware/validateApiKey.middleware";
+import { showError } from "./middleware/error.middleware";
 import { logger, LogType } from "./utils/logger";
+// import database
+import DB from "./config/db";
+// import routes
 import defaultRoute from "./routes/defaultRoute";
 import userRoute from "./routes/user.router";
-import DB from "./config/db";
-import cookieParser from "cookie-parser";
 import postRoute from "./routes/post.router";
 import commentRoute from "./routes/comment.router";
-import { showError } from "./middleware/error.middleware";
-import validateApiKey from "./middleware/validateApiKey.middleware";
-import requestQueryValidators from "./middleware/requestQueryValidators";
+
 export default class App {
   private app: express.Application;
   constructor() {
@@ -37,6 +43,7 @@ export default class App {
     this.app.use(express.json());
     this.app.use(express.urlencoded({ extended: false }));
     this.app.use(cookieParser());
+    this.app.use(i18n.init);
   }
   private initializeErrorHandler() {
     this.app.use(showError());

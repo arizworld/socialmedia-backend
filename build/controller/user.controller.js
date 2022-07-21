@@ -12,14 +12,16 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const user_model_1 = __importDefault(require("../model/user.model"));
-const mailer_1 = __importDefault(require("../utils/mailer"));
+// import error handlers
 const catchAsyncErrors_1 = __importDefault(require("../utils/error/catchAsyncErrors"));
 const ErrorHandler_1 = __importDefault(require("../utils/error/ErrorHandler"));
+// import utils
+const mailer_1 = __importDefault(require("../utils/mailer"));
 const crypto_1 = __importDefault(require("crypto"));
 const sharp_1 = __importDefault(require("sharp"));
-const user_model_2 = __importDefault(require("../model/user.model"));
 const config_1 = __importDefault(require("../config/config"));
+// import services
+const user_model_1 = __importDefault(require("../model/user.model"));
 const UserAggregation_1 = __importDefault(require("../utils/Aggregation/UserAggregation"));
 const post_model_1 = __importDefault(require("../model/post.model"));
 const comments_model_1 = __importDefault(require("../model/comments.model"));
@@ -28,11 +30,11 @@ class UserController {
         this.signup = (0, catchAsyncErrors_1.default)(function (req, res, next) {
             return __awaiter(this, void 0, void 0, function* () {
                 let { username, email, password } = req.body;
-                const user = yield user_model_2.default.findOne({ email });
+                const user = yield user_model_1.default.findOne({ email });
                 if (user) {
-                    return next(new ErrorHandler_1.default(400, "user already exists"));
+                    return next(new ErrorHandler_1.default(400, "USER_EXISTS"));
                 }
-                const newUser = yield user_model_2.default.create({
+                const newUser = yield user_model_1.default.create({
                     username,
                     email,
                     password,
@@ -45,19 +47,21 @@ class UserController {
                 if (newUser.image) {
                     newUser.image.data = undefined;
                 }
-                res.status(200).json({ success: true, user: newUser });
+                res
+                    .status(200)
+                    .json({ success: true, user: newUser, message: res.__("USER_CREATED") });
             });
         });
         this.login = (0, catchAsyncErrors_1.default)(function (req, res, next) {
             return __awaiter(this, void 0, void 0, function* () {
                 let { email, password } = req.body;
-                const user = yield user_model_2.default.findOne({ email });
+                const user = yield user_model_1.default.findOne({ email });
                 if (!user) {
-                    return next(new ErrorHandler_1.default(400, "Invalid Credentials"));
+                    return next(new ErrorHandler_1.default(400, "INVALID_CREDENTIALS"));
                 }
                 const isvalidPassword = yield user.comparePassword(password);
                 if (!isvalidPassword) {
-                    return next(new ErrorHandler_1.default(400, "Invalid password Credentials"));
+                    return next(new ErrorHandler_1.default(400, "INVALID_CREDENTIALS"));
                 }
                 const token = user.getToken();
                 res.cookie("token", token, {
@@ -67,7 +71,11 @@ class UserController {
                 if (user.image) {
                     user.image.data = undefined;
                 }
-                res.status(200).json({ success: true, user });
+                res.status(200).json({
+                    success: true,
+                    user,
+                    message: `${res.__("USER_LOGIN")} ${user.username}`,
+                });
             });
         });
         //   authentication required
@@ -75,22 +83,24 @@ class UserController {
             return __awaiter(this, void 0, void 0, function* () {
                 const { token } = req.cookies;
                 if (!token) {
-                    return next(new ErrorHandler_1.default(401, "Please login first"));
+                    return next(new ErrorHandler_1.default(401, "UNAUTHORISED"));
                 }
                 res.cookie("token", "", {
                     maxAge: 1,
                     httpOnly: true,
                 });
-                res.status(200).json({ success: true, message: "See You soon" });
+                res
+                    .status(200)
+                    .json({ success: true, message: `${res.__("USER_LOGOUT")}` });
             });
         });
         //   authentication required
         this.deleteAccount = (0, catchAsyncErrors_1.default)(function (req, res, next) {
             return __awaiter(this, void 0, void 0, function* () {
                 const userId = req.body.userID;
-                const user = yield user_model_2.default.delete(userId);
+                const user = yield user_model_1.default.delete(userId);
                 if (!user) {
-                    return next(new ErrorHandler_1.default(400, "User not found"));
+                    return next(new ErrorHandler_1.default(400, "USER_NOT_FOUND"));
                 }
                 const posts = yield post_model_1.default.find({ author: user._id });
                 // delete all comments of that post
@@ -104,16 +114,20 @@ class UserController {
                 // delete all comments of user
                 yield comments_model_1.default.deleteMany({ author: user._id });
                 user.image = undefined;
-                res.status(200).json({ success: true, user });
+                res.status(200).json({
+                    success: true,
+                    user,
+                    message: `${res.__("USER_DELETED")} ${user.username}`,
+                });
             });
         });
         this.forgetPassword = (0, catchAsyncErrors_1.default)(function (req, res, next) {
             return __awaiter(this, void 0, void 0, function* () {
                 const { email } = req.body;
                 if (!email) {
-                    return next(new ErrorHandler_1.default(400, "To find your account you must provide email"));
+                    return next(new ErrorHandler_1.default(400, "EMPTY_EMAIL"));
                 }
-                const user = yield user_model_2.default.findOne({ email });
+                const user = yield user_model_1.default.findOne({ email });
                 if (!user) {
                     return next(new ErrorHandler_1.default(400, "No user found"));
                 }
@@ -128,10 +142,10 @@ class UserController {
                         return res.status(200).json({
                             success: true,
                             resetToken,
-                            message: "if not found in primary checkout spam fodler",
+                            message: res.__("EMAIL_SENT_SUCCESS"),
                         });
                     }
-                    return next(new ErrorHandler_1.default(500, "Mail not sent try again later"));
+                    return next(new ErrorHandler_1.default(500, "EMAIL_SENT_FAILURE"));
                 }
                 catch (error) {
                     user.resetToken = undefined;
@@ -140,7 +154,7 @@ class UserController {
                     if (error instanceof Error) {
                         return next(new ErrorHandler_1.default(500, error.message));
                     }
-                    next(new ErrorHandler_1.default(500, "Unknown Error occured"));
+                    next(new ErrorHandler_1.default(500, "UNKNOWN_ERROR"));
                 }
             });
         });
@@ -149,18 +163,18 @@ class UserController {
                 const { token } = req.params;
                 const { password, confirmPassword } = req.body;
                 if (!token) {
-                    return next(new ErrorHandler_1.default(400, "Invalid Request"));
+                    return next(new ErrorHandler_1.default(400, "INVALID_REQUEST"));
                 }
                 const resetToken = crypto_1.default.createHash("sha256").update(token).digest("hex");
-                const user = yield user_model_2.default.findOne({
+                const user = yield user_model_1.default.findOne({
                     resetToken,
                     resetTokenExpire: { $gt: Date.now() },
                 });
                 if (!user) {
-                    return next(new ErrorHandler_1.default(401, "Invalid Token"));
+                    return next(new ErrorHandler_1.default(401, "INVALID_TOKEN"));
                 }
                 if (password !== confirmPassword) {
-                    return next(new ErrorHandler_1.default(400, "Password and confirm password must be same"));
+                    return next(new ErrorHandler_1.default(400, "PASSWORD_UNMATCHED"));
                 }
                 user.password = password;
                 user.resetToken = undefined;
@@ -168,7 +182,7 @@ class UserController {
                 yield user.save();
                 res
                     .status(200)
-                    .json({ success: true, user, message: "please login to continue" });
+                    .json({ success: true, user, message: res.__("PASSWORD_RESET_SUCCESS") });
             });
         });
         //   authentication required
@@ -176,12 +190,12 @@ class UserController {
             return __awaiter(this, void 0, void 0, function* () {
                 try {
                     const userId = req.body.userID;
-                    const user = yield user_model_2.default.findById(userId);
+                    const user = yield user_model_1.default.findById(userId);
                     if (!req.file) {
-                        return next(new ErrorHandler_1.default(400, "No file found"));
+                        return next(new ErrorHandler_1.default(400, "FILE_NOT_FOUND"));
                     }
                     if (!user) {
-                        return next(new ErrorHandler_1.default(400, "No user found"));
+                        return next(new ErrorHandler_1.default(400, "USER_NOT_FOUND"));
                     }
                     const imageData = yield (0, sharp_1.default)(req.file.buffer)
                         .png()
@@ -192,13 +206,17 @@ class UserController {
                         url: `${req.protocol}://${req.get("host")}/user/${userId}/avatar`,
                     };
                     yield user.save();
-                    res.status(200).json({ success: true, url: user.image.url });
+                    res.status(200).json({
+                        success: true,
+                        url: user.image.url,
+                        message: res.__("PROFILE_PIC_SET_SUCCESS"),
+                    });
                 }
                 catch (error) {
                     if (error instanceof Error) {
                         return next(new ErrorHandler_1.default(500, error.message));
                     }
-                    next(new ErrorHandler_1.default(500, "Unknown Error occured"));
+                    next(new ErrorHandler_1.default(500, "UNKNOWN_ERROR"));
                 }
             });
         });
@@ -208,25 +226,27 @@ class UserController {
                 const userId = req.body.userID;
                 const user = yield user_model_1.default.findById(userId);
                 if (!user) {
-                    return next(new ErrorHandler_1.default(400, "No user found"));
+                    return next(new ErrorHandler_1.default(400, "USER_NOT_FOUND"));
                 }
                 user.image = undefined;
                 yield user.save();
-                res.status(200).json({ success: true });
+                res
+                    .status(200)
+                    .json({ success: true, message: res.__("PROFILE_PIC_REMOVE_SUCCESS") });
             });
         });
         this.showProfilePic = (0, catchAsyncErrors_1.default)(function (req, res, next) {
             return __awaiter(this, void 0, void 0, function* () {
                 const { id } = req.params;
                 if (!id) {
-                    return next(new ErrorHandler_1.default(400, "Invalid request"));
+                    return next(new ErrorHandler_1.default(400, "INVALID_REQUEST"));
                 }
                 const user = yield user_model_1.default.findById(id);
                 if (!user) {
-                    return next(new ErrorHandler_1.default(400, "No user found"));
+                    return next(new ErrorHandler_1.default(400, "USER_NOT_FOUND"));
                 }
                 if (!user.image) {
-                    return next(new ErrorHandler_1.default(400, "please set profile pic first"));
+                    return next(new ErrorHandler_1.default(400, "PROFILE_PIC_NOT_FOUND"));
                 }
                 res.setHeader("Content-Type", "image/png");
                 res.status(200).send(user.image.data);
@@ -237,24 +257,24 @@ class UserController {
                 const pipeline = new UserAggregation_1.default(req.query)
                     .hideImageData()
                     .pagination().pipeline;
-                const user = yield user_model_2.default.aggregate(pipeline);
-                res.status(200).json({ user });
+                const data = yield user_model_1.default.aggregate(pipeline);
+                res.status(200).json({ success: true, data });
             });
         });
         this.getUser = (0, catchAsyncErrors_1.default)(function (req, res, next) {
             return __awaiter(this, void 0, void 0, function* () {
                 const { id } = req.params;
                 if (!id) {
-                    return next(new ErrorHandler_1.default(400, "user id is required"));
+                    return next(new ErrorHandler_1.default(400, "INVALID_REQUEST"));
                 }
-                const user = yield user_model_2.default.findById(id);
+                const user = yield user_model_1.default.findById(id);
                 if (!user) {
-                    return next(new ErrorHandler_1.default(400, "No user found"));
+                    return next(new ErrorHandler_1.default(400, "USER_NOT_FOUND"));
                 }
                 if (user.image) {
                     user.image.data = undefined;
                 }
-                res.status(200).json({ user });
+                res.status(200).json({ success: true, user });
             });
         });
     }

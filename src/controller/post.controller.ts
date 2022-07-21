@@ -1,12 +1,15 @@
 import mongoose, { ObjectId } from "mongoose";
 import { NextFunction, Request, Response } from "express";
-import { Like, LikeTypes, PostModel, Media } from "../model/post.model";
+import { Like, LikeTypes, Media } from "../model/post.model";
+// import error handlers
 import catchAsyncErrors from "../utils/error/catchAsyncErrors";
 import ErrorHandler from "../utils/error/ErrorHandler";
+
+// import Services
 import PostServices from "../model/post.model";
 import UserServices from "../model/user.model";
-import PostAggregation from "../utils/Aggregation/PostAggregation";
 import CommentServices from "../model/comments.model";
+import PostAggregation from "../utils/Aggregation/PostAggregation";
 
 interface CustomFileType extends Express.Multer.File {
   id: ObjectId;
@@ -36,7 +39,7 @@ export default class PostController {
     const tags = req.body.tags || [];
     const likes: Like[] = [];
     if (!author || !authorname) {
-      return next(new ErrorHandler(403, "author is required"));
+      return next(new ErrorHandler(403, "AUTHENTICATION_REQUIRED"));
     }
     const post = await PostServices.create({
       title,
@@ -48,9 +51,11 @@ export default class PostController {
       likes,
     });
     if (!post) {
-      return next(new ErrorHandler(500, "post not created"));
+      return next(new ErrorHandler(500, "POST_NOT_CREATED"));
     }
-    res.status(200).json({ success: true, post });
+    res
+      .status(200)
+      .json({ success: true, post, message: res.__("POST_CREATED") });
   });
 
   updatePost = catchAsyncErrors(async function (
@@ -76,14 +81,15 @@ export default class PostController {
     const tags = req.body.tags || [];
     const { id } = req.params;
     if (!id) {
-      return next(new ErrorHandler(400, "Invalid request : post id required"));
+      return next(new ErrorHandler(400, "INVALID_REQUEST"));
     }
     let post = await PostServices.findById(id);
     if (!post) {
-      return next(new ErrorHandler(404, "Invalid request : post not found"));
+      return next(new ErrorHandler(404, "POST_NOT_FOUND"));
     }
+    // cant update others post
     if (post.author.toString() !== author.toString()) {
-      return next(new ErrorHandler(403, "Cant update others post"));
+      return next(new ErrorHandler(403, "FORBIDDEN"));
     }
     const updatedPost = await PostServices.update(id, {
       title,
@@ -92,9 +98,13 @@ export default class PostController {
       media,
     });
     if (!updatedPost) {
-      return next(new ErrorHandler(500, "post not updated"));
+      return next(new ErrorHandler(500, "POST_UPDATE_FAILURE"));
     }
-    res.status(200).json({ success: true, updatedPost });
+    res.status(200).json({
+      success: true,
+      updatedPost,
+      message: res.__("POST_UPDATE_SUCCESS"),
+    });
   });
 
   getPost = catchAsyncErrors(async function (
@@ -104,15 +114,12 @@ export default class PostController {
   ) {
     const { id } = req.params;
     if (!id) {
-      return next(new ErrorHandler(400, "Invalid request : post id required"));
+      return next(new ErrorHandler(400, "INVALID_REQUEST"));
     }
-    const postExists = await PostServices.findById(id);
-    if (!postExists) {
-      return next(new ErrorHandler(404, "Invalid request : post not found"));
+    const post = await PostServices.findById(id);
+    if (!post) {
+      return next(new ErrorHandler(404, "POST_NOT_FOUND"));
     }
-    console.log(postExists._id);
-    let pipeline = new PostAggregation(null).matchId(postExists._id).pipeline;
-    const post = await PostServices.aggregate(pipeline);
     res.status(200).json({ success: true, post });
   });
   getAllPosts = catchAsyncErrors(async function (
@@ -126,11 +133,8 @@ export default class PostController {
       .customSort()
       .pagination().pipeline;
 
-    let posts: PostModel[] = await PostServices.aggregate(pipeline);
-    if (!posts) {
-      return next(new ErrorHandler(404, "not post found"));
-    }
-    res.status(200).json({ success: true, posts });
+    const data = await PostServices.aggregate(pipeline);
+    res.status(200).json({ success: true, data });
   });
   getUserSpecificPosts = catchAsyncErrors(async function (
     req: Request,
@@ -139,20 +143,20 @@ export default class PostController {
   ) {
     const { id } = req.params;
     if (!id) {
-      return next(new ErrorHandler(400, "User id Required"));
+      return next(new ErrorHandler(400, "INVALID_REQUEST"));
     }
-    let userExists = await UserServices.findById(id);
-    if (!userExists) {
-      return next(new ErrorHandler(400, "Invalid user id"));
+    let user = await UserServices.findById(id);
+    if (!user) {
+      return next(new ErrorHandler(400, "USER_NOT_FOUND"));
     }
     const pipeline = new PostAggregation(req.query)
-      .matchAuthor(userExists._id)
+      .matchAuthor(user._id)
       .search()
       .filterTags()
       .customSort()
       .pagination().pipeline;
-    const user = await UserServices.aggregate(pipeline);
-    res.status(200).json({ success: true, user: user[0] });
+    const data = await PostServices.aggregate(pipeline);
+    res.status(200).json({ success: true, data: data });
   });
 
   deletePost = catchAsyncErrors(async function (
@@ -162,15 +166,17 @@ export default class PostController {
   ) {
     const { id } = req.params;
     if (!id) {
-      return next(new ErrorHandler(400, "Invalid request : post id required"));
+      return next(new ErrorHandler(400, "INVALID_REQUEST"));
     }
     let post = await PostServices.findById(id);
     if (!post) {
-      return next(new ErrorHandler(404, "Invalid request : post not found"));
+      return next(new ErrorHandler(404, "POST_NOT_FOUND"));
     }
     post = await PostServices.delete(id);
     await CommentServices.deleteMany({ postId: post?._id });
-    res.status(200).json({ success: true, post });
+    res
+      .status(200)
+      .json({ success: true, post, message: res.__("POST_DELETE_SUCCESS") });
   });
   streamFile = catchAsyncErrors(async function (
     req: Request,
@@ -179,14 +185,17 @@ export default class PostController {
   ) {
     const { id } = req.params;
     if (!id) {
-      return next(new ErrorHandler(400, "No Id found"));
+      return next(new ErrorHandler(400, "INVALID_REQUEST"));
     }
     const range = req.headers.range || "0";
     mongoose.connection.db
       .collection("uploads.files")
       .findOne({ _id: new mongoose.Types.ObjectId(id) }, (err, file) => {
+        if (err) {
+          return next(new ErrorHandler(500, "UNKNOWN_ERROR"));
+        }
         if (!file) {
-          return next(new ErrorHandler(500, "No File found"));
+          return next(new ErrorHandler(500, "FILE_NOT_FOUND"));
         }
         const fileSize = file.length;
         const start = Number(range.replace(/\D/g, ""));
@@ -224,23 +233,23 @@ export default class PostController {
     const author = req.body.userID;
     const authorname = req.body.username;
     if (!id) {
-      return next(new ErrorHandler(400, "post id required"));
+      return next(new ErrorHandler(400, "INVALID_REQUEST"));
     }
     let post = await PostServices.findById(id);
     if (!post) {
-      return next(new ErrorHandler(400, "post not found"));
+      return next(new ErrorHandler(400, "POST_NOT_FOUND"));
     }
     post = await PostServices.findOne({
       _id: id,
       "likes.authorId": author,
     });
     if (post) {
-      return next(new ErrorHandler(400, "author has already reacted"));
+      return next(new ErrorHandler(400, "REACTION_EXISTS"));
     }
     if (reactionType) {
       let isValidType = Object.keys(LikeTypes).includes(reactionType);
       if (!isValidType) {
-        return next(new ErrorHandler(400, "Invalid reaction Type"));
+        return next(new ErrorHandler(400, "INVALID_REACTION_TYPE"));
       }
     } else {
       reactionType = LikeTypes.love;
@@ -260,7 +269,11 @@ export default class PostController {
         },
       }
     );
-    res.json({ sucess: true, post, message: `${reactionType} added ` });
+    res.json({
+      sucess: true,
+      post,
+      message: `${reactionType} ${res.__("REACTION_ADDED")} `,
+    });
   });
   updateReaction = catchAsyncErrors(async function (
     req: Request,
@@ -271,23 +284,23 @@ export default class PostController {
     let { reactionType } = req.body;
     const author = req.body.userID;
     if (!id) {
-      return next(new ErrorHandler(400, "post id  required"));
+      return next(new ErrorHandler(400, "INVALID_REQUEST"));
     }
     let post = await PostServices.findById(id);
     if (!post) {
-      return next(new ErrorHandler(400, "post not found"));
+      return next(new ErrorHandler(400, "POST_NOT_FOUND"));
     }
 
     let isValidType = Object.keys(LikeTypes).includes(reactionType);
     if (!isValidType) {
-      return next(new ErrorHandler(400, "Invalid reaction Type"));
+      return next(new ErrorHandler(400, "INVALID_REACTION_TYPE"));
     }
     post = await PostServices.findOne({
       _id: id,
       "likes.authorId": author,
     });
     if (!post) {
-      return next(new ErrorHandler(400, "No reaction found"));
+      return next(new ErrorHandler(400, "REACTION_NOT_FOUND"));
     }
     post = await PostServices.partialUpdate(
       {
@@ -298,7 +311,11 @@ export default class PostController {
         "likes.$.reactionType": reactionType,
       }
     );
-    res.json({ sucess: true, post, message: `${reactionType} added ` });
+    res.json({
+      sucess: true,
+      post,
+      message: `${reactionType} ${res.__("REACTION_ADDED")} `,
+    });
   });
   removeReaction = catchAsyncErrors(async function (
     req: Request,
@@ -309,18 +326,18 @@ export default class PostController {
     let { reactionType } = req.body;
     const author = req.body.userID;
     if (!id) {
-      return next(new ErrorHandler(400, "post id required"));
+      return next(new ErrorHandler(400, "INVALID_REQUEST"));
     }
     let post = await PostServices.findById(id);
     if (!post) {
-      return next(new ErrorHandler(400, "post not found"));
+      return next(new ErrorHandler(400, "POST_NOT_FOUND"));
     }
     post = await PostServices.findOne({
       _id: id,
       "likes.authorId": author,
     });
     if (!post) {
-      return next(new ErrorHandler(400, "No reaction found"));
+      return next(new ErrorHandler(400, "REACTION_NOT_FOUND"));
     }
     post = await PostServices.partialUpdate(
       { _id: id },
@@ -338,7 +355,7 @@ export default class PostController {
     res.json({
       success: true,
       post,
-      message: `${reactionType} removed`,
+      message: `${reactionType} ${res.__("REACTION_REMOVED")}`,
     });
   });
 }
