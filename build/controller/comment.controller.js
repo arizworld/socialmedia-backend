@@ -105,7 +105,7 @@ class CommentController {
                     }
                 }
                 if (!id) {
-                    return next(new ErrorHandler_1.default(400, "INVALID_REQUEST"));
+                    return next(new ErrorHandler_1.default(400, "INVALID_POST_ID"));
                 }
                 const author = req.body.userID;
                 const authorname = req.body.username;
@@ -146,10 +146,10 @@ class CommentController {
                     return next(new ErrorHandler_1.default(400, "COMMENT_EMPTY"));
                 }
                 if (!id) {
-                    return next(new ErrorHandler_1.default(400, "INVALID_REQUEST"));
+                    return next(new ErrorHandler_1.default(400, "INVALID_POST_ID"));
                 }
                 if (!cid) {
-                    return next(new ErrorHandler_1.default(400, "INVALID_REQUEST"));
+                    return next(new ErrorHandler_1.default(400, "INVALID_COMMENT_ID"));
                 }
                 // getting from auth middle ware
                 const author = req.body.userID;
@@ -188,7 +188,7 @@ class CommentController {
                 // id = post id, cid = comment id
                 const { id, cid } = req.params;
                 if (!id) {
-                    return next(new ErrorHandler_1.default(400, "INVALID_REQUEST"));
+                    return next(new ErrorHandler_1.default(400, "INVALID_POST_ID"));
                 }
                 // getting from auth middle ware
                 const author = req.body.userID;
@@ -229,7 +229,7 @@ class CommentController {
                 const author = req.body.userID;
                 const authorname = req.body.username;
                 if (!id || !cid) {
-                    return next(new ErrorHandler_1.default(400, "INVALID_REQUEST"));
+                    return next(new ErrorHandler_1.default(400, "INVALID_POST_ID"));
                 }
                 let post = yield post_model_1.default.findById(id);
                 if (!post) {
@@ -282,8 +282,11 @@ class CommentController {
                 const { id, cid } = req.params;
                 let { reactionType } = req.body;
                 const author = req.body.userID;
-                if (!id || !cid) {
-                    return next(new ErrorHandler_1.default(400, "INVALID_REQUEST"));
+                if (!id) {
+                    return next(new ErrorHandler_1.default(400, "INVALID_POST_ID"));
+                }
+                if (!cid) {
+                    return next(new ErrorHandler_1.default(400, "INVALID_COMMENT_ID"));
                 }
                 let post = yield post_model_1.default.findById(id);
                 if (!post) {
@@ -325,8 +328,11 @@ class CommentController {
                 const { id, cid } = req.params;
                 let { reactionType } = req.body;
                 const author = req.body.userID;
-                if (!id || !cid) {
-                    return next(new ErrorHandler_1.default(400, "INVALID_REQUEST"));
+                if (!id) {
+                    return next(new ErrorHandler_1.default(400, "INVALID_POST_ID"));
+                }
+                if (!cid) {
+                    return next(new ErrorHandler_1.default(400, "INVALID_COMMENT_ID"));
                 }
                 let post = yield post_model_1.default.findById(id);
                 if (!post) {

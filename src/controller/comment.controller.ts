@@ -81,7 +81,7 @@ export default class CommentController {
     }
 
     if (!id) {
-      return next(new ErrorHandler(400, "INVALID_REQUEST"));
+      return next(new ErrorHandler(400, "INVALID_POST_ID"));
     }
     const author = req.body.userID;
     const authorname = req.body.username;
@@ -124,10 +124,10 @@ export default class CommentController {
       return next(new ErrorHandler(400, "COMMENT_EMPTY"));
     }
     if (!id) {
-      return next(new ErrorHandler(400, "INVALID_REQUEST"));
+      return next(new ErrorHandler(400, "INVALID_POST_ID"));
     }
     if (!cid) {
-      return next(new ErrorHandler(400, "INVALID_REQUEST"));
+      return next(new ErrorHandler(400, "INVALID_COMMENT_ID"));
     }
     // getting from auth middle ware
     const author = req.body.userID;
@@ -168,7 +168,7 @@ export default class CommentController {
     // id = post id, cid = comment id
     const { id, cid } = req.params;
     if (!id) {
-      return next(new ErrorHandler(400, "INVALID_REQUEST"));
+      return next(new ErrorHandler(400, "INVALID_POST_ID"));
     }
     // getting from auth middle ware
     const author = req.body.userID;
@@ -212,7 +212,7 @@ export default class CommentController {
     const author = req.body.userID;
     const authorname = req.body.username;
     if (!id || !cid) {
-      return next(new ErrorHandler(400, "INVALID_REQUEST"));
+      return next(new ErrorHandler(400, "INVALID_POST_ID"));
     }
     let post = await PostServices.findById(id);
     if (!post) {
@@ -269,8 +269,11 @@ export default class CommentController {
     const { id, cid } = req.params;
     let { reactionType } = req.body;
     const author = req.body.userID;
-    if (!id || !cid) {
-      return next(new ErrorHandler(400, "INVALID_REQUEST"));
+    if (!id) {
+      return next(new ErrorHandler(400, "INVALID_POST_ID"));
+    }
+    if (!cid) {
+      return next(new ErrorHandler(400, "INVALID_COMMENT_ID"));
     }
     let post = await PostServices.findById(id);
     if (!post) {
@@ -317,8 +320,11 @@ export default class CommentController {
     const { id, cid } = req.params;
     let { reactionType } = req.body;
     const author = req.body.userID;
-    if (!id || !cid) {
-      return next(new ErrorHandler(400, "INVALID_REQUEST"));
+    if (!id) {
+      return next(new ErrorHandler(400, "INVALID_POST_ID"));
+    }
+    if (!cid) {
+      return next(new ErrorHandler(400, "INVALID_COMMENT_ID"));
     }
     let post = await PostServices.findById(id);
     if (!post) {

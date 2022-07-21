@@ -129,7 +129,7 @@ class UserController {
                 }
                 const user = yield user_model_1.default.findOne({ email });
                 if (!user) {
-                    return next(new ErrorHandler_1.default(400, "No user found"));
+                    return next(new ErrorHandler_1.default(400, "USER_NOT_FOUND"));
                 }
                 try {
                     const resetToken = yield user.getResetToken(config_1.default.resetDelay);
@@ -152,7 +152,7 @@ class UserController {
                     user.resetTokenExpire = undefined;
                     yield user.save();
                     if (error instanceof Error) {
-                        return next(new ErrorHandler_1.default(500, error.message));
+                        return next(new ErrorHandler_1.default(500, "", error.message));
                     }
                     next(new ErrorHandler_1.default(500, "UNKNOWN_ERROR"));
                 }
@@ -163,7 +163,7 @@ class UserController {
                 const { token } = req.params;
                 const { password, confirmPassword } = req.body;
                 if (!token) {
-                    return next(new ErrorHandler_1.default(400, "INVALID_REQUEST"));
+                    return next(new ErrorHandler_1.default(400, "INVALID_TOKEN"));
                 }
                 const resetToken = crypto_1.default.createHash("sha256").update(token).digest("hex");
                 const user = yield user_model_1.default.findOne({
@@ -171,7 +171,7 @@ class UserController {
                     resetTokenExpire: { $gt: Date.now() },
                 });
                 if (!user) {
-                    return next(new ErrorHandler_1.default(401, "INVALID_TOKEN"));
+                    return next(new ErrorHandler_1.default(401, "INVALID_RESET_TOKEN"));
                 }
                 if (password !== confirmPassword) {
                     return next(new ErrorHandler_1.default(400, "PASSWORD_UNMATCHED"));
@@ -214,7 +214,7 @@ class UserController {
                 }
                 catch (error) {
                     if (error instanceof Error) {
-                        return next(new ErrorHandler_1.default(500, error.message));
+                        return next(new ErrorHandler_1.default(500, "", error.message));
                     }
                     next(new ErrorHandler_1.default(500, "UNKNOWN_ERROR"));
                 }
@@ -239,7 +239,7 @@ class UserController {
             return __awaiter(this, void 0, void 0, function* () {
                 const { id } = req.params;
                 if (!id) {
-                    return next(new ErrorHandler_1.default(400, "INVALID_REQUEST"));
+                    return next(new ErrorHandler_1.default(400, "INVALID_USER_ID"));
                 }
                 const user = yield user_model_1.default.findById(id);
                 if (!user) {
@@ -265,7 +265,7 @@ class UserController {
             return __awaiter(this, void 0, void 0, function* () {
                 const { id } = req.params;
                 if (!id) {
-                    return next(new ErrorHandler_1.default(400, "INVALID_REQUEST"));
+                    return next(new ErrorHandler_1.default(400, "INVALID_USER_ID"));
                 }
                 const user = yield user_model_1.default.findById(id);
                 if (!user) {

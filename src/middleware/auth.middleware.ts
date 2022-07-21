@@ -13,7 +13,7 @@ export default catchAsyncErrors(async function (
 ) {
   const { token } = req.cookies;
   if (!token) {
-    return next(new ErrorHandler(400, "INVALID_REQUEST"));
+    return next(new ErrorHandler(400, "INVALID_TOKEN"));
   }
   const data = jwt.verify(token, config.secretKey);
   if (typeof data === "object") {

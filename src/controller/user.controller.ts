@@ -131,7 +131,7 @@ export default class UserController {
     }
     const user = await UserServices.findOne({ email });
     if (!user) {
-      return next(new ErrorHandler(400, "No user found"));
+      return next(new ErrorHandler(400, "USER_NOT_FOUND"));
     }
     try {
       const resetToken = await user.getResetToken(config.resetDelay);
@@ -157,7 +157,7 @@ export default class UserController {
       user.resetTokenExpire = undefined;
       await user.save();
       if (error instanceof Error) {
-        return next(new ErrorHandler(500, error.message));
+        return next(new ErrorHandler(500, "", error.message));
       }
       next(new ErrorHandler(500, "UNKNOWN_ERROR"));
     }
@@ -171,7 +171,7 @@ export default class UserController {
     const { token } = req.params;
     const { password, confirmPassword } = req.body;
     if (!token) {
-      return next(new ErrorHandler(400, "INVALID_REQUEST"));
+      return next(new ErrorHandler(400, "INVALID_TOKEN"));
     }
     const resetToken = crypto.createHash("sha256").update(token).digest("hex");
     const user = await UserServices.findOne({
@@ -179,7 +179,7 @@ export default class UserController {
       resetTokenExpire: { $gt: Date.now() },
     });
     if (!user) {
-      return next(new ErrorHandler(401, "INVALID_TOKEN"));
+      return next(new ErrorHandler(401, "INVALID_RESET_TOKEN"));
     }
     if (password !== confirmPassword) {
       return next(new ErrorHandler(400, "PASSWORD_UNMATCHED"));
@@ -225,7 +225,7 @@ export default class UserController {
       });
     } catch (error) {
       if (error instanceof Error) {
-        return next(new ErrorHandler(500, error.message));
+        return next(new ErrorHandler(500, "", error.message));
       }
       next(new ErrorHandler(500, "UNKNOWN_ERROR"));
     }
@@ -256,7 +256,7 @@ export default class UserController {
   ) {
     const { id } = req.params;
     if (!id) {
-      return next(new ErrorHandler(400, "INVALID_REQUEST"));
+      return next(new ErrorHandler(400, "INVALID_USER_ID"));
     }
     const user = await UserServices.findById(id);
     if (!user) {
@@ -286,7 +286,7 @@ export default class UserController {
   ) {
     const { id } = req.params;
     if (!id) {
-      return next(new ErrorHandler(400, "INVALID_REQUEST"));
+      return next(new ErrorHandler(400, "INVALID_USER_ID"));
     }
     const user = await UserServices.findById(id);
     if (!user) {

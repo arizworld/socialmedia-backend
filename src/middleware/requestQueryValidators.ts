@@ -9,16 +9,18 @@ export default function (req: Request, res: Response, next: NextFunction) {
   const { query } = req;
   const queryCopy = { ...query };
   if (queryCopy.srt && !(queryCopy.srt === "ml" || queryCopy.srt === "mr")) {
-    return next(
-      new ErrorHandler(400, "", `Invalid value for srt: ${queryCopy.srt}`)
-    );
+    return res.status(400).json({
+      success: false,
+      message: res.__("INVALID_QUERY_SORT"),
+    });
   }
   validQueries.forEach((q) => delete queryCopy[q]);
   const keys = Object.keys(queryCopy);
   if (keys.length) {
-    return next(
-      new ErrorHandler(400, "", `Invalid query parameters : ${keys.join(",")}`)
-    );
+    return res.status(400).json({
+      success: false,
+      message: res.__("INVALID_QUERY_PARAMS"),
+    });
   }
   next();
 }

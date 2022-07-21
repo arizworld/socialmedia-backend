@@ -81,7 +81,7 @@ export default class PostController {
     const tags = req.body.tags || [];
     const { id } = req.params;
     if (!id) {
-      return next(new ErrorHandler(400, "INVALID_REQUEST"));
+      return next(new ErrorHandler(400, "INVALID_POST_ID"));
     }
     let post = await PostServices.findById(id);
     if (!post) {
@@ -114,7 +114,7 @@ export default class PostController {
   ) {
     const { id } = req.params;
     if (!id) {
-      return next(new ErrorHandler(400, "INVALID_REQUEST"));
+      return next(new ErrorHandler(400, "INVALID_POST_ID"));
     }
     const post = await PostServices.findById(id);
     if (!post) {
@@ -143,7 +143,7 @@ export default class PostController {
   ) {
     const { id } = req.params;
     if (!id) {
-      return next(new ErrorHandler(400, "INVALID_REQUEST"));
+      return next(new ErrorHandler(400, "INVALID_USER_ID"));
     }
     let user = await UserServices.findById(id);
     if (!user) {
@@ -166,7 +166,7 @@ export default class PostController {
   ) {
     const { id } = req.params;
     if (!id) {
-      return next(new ErrorHandler(400, "INVALID_REQUEST"));
+      return next(new ErrorHandler(400, "INVALID_POST_ID"));
     }
     let post = await PostServices.findById(id);
     if (!post) {
@@ -185,7 +185,7 @@ export default class PostController {
   ) {
     const { id } = req.params;
     if (!id) {
-      return next(new ErrorHandler(400, "INVALID_REQUEST"));
+      return next(new ErrorHandler(400, "INVALID_FILE_ID"));
     }
     const range = req.headers.range || "0";
     mongoose.connection.db
@@ -218,7 +218,7 @@ export default class PostController {
         });
         downloadStream.pipe(res);
         downloadStream.on("error", (err) => {
-          return next(new ErrorHandler(500, err.message));
+          return next(new ErrorHandler(500, "", err.message));
         });
       });
   });
@@ -233,7 +233,7 @@ export default class PostController {
     const author = req.body.userID;
     const authorname = req.body.username;
     if (!id) {
-      return next(new ErrorHandler(400, "INVALID_REQUEST"));
+      return next(new ErrorHandler(400, "INVALID_POST_ID"));
     }
     let post = await PostServices.findById(id);
     if (!post) {
@@ -284,7 +284,7 @@ export default class PostController {
     let { reactionType } = req.body;
     const author = req.body.userID;
     if (!id) {
-      return next(new ErrorHandler(400, "INVALID_REQUEST"));
+      return next(new ErrorHandler(400, "INVALID_POST_ID"));
     }
     let post = await PostServices.findById(id);
     if (!post) {
@@ -326,7 +326,7 @@ export default class PostController {
     let { reactionType } = req.body;
     const author = req.body.userID;
     if (!id) {
-      return next(new ErrorHandler(400, "INVALID_REQUEST"));
+      return next(new ErrorHandler(400, "INVALID_POST_ID"));
     }
     let post = await PostServices.findById(id);
     if (!post) {

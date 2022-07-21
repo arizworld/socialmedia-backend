@@ -80,7 +80,7 @@ class PostController {
                 const tags = req.body.tags || [];
                 const { id } = req.params;
                 if (!id) {
-                    return next(new ErrorHandler_1.default(400, "INVALID_REQUEST"));
+                    return next(new ErrorHandler_1.default(400, "INVALID_POST_ID"));
                 }
                 let post = yield post_model_2.default.findById(id);
                 if (!post) {
@@ -110,7 +110,7 @@ class PostController {
             return __awaiter(this, void 0, void 0, function* () {
                 const { id } = req.params;
                 if (!id) {
-                    return next(new ErrorHandler_1.default(400, "INVALID_REQUEST"));
+                    return next(new ErrorHandler_1.default(400, "INVALID_POST_ID"));
                 }
                 const post = yield post_model_2.default.findById(id);
                 if (!post) {
@@ -134,7 +134,7 @@ class PostController {
             return __awaiter(this, void 0, void 0, function* () {
                 const { id } = req.params;
                 if (!id) {
-                    return next(new ErrorHandler_1.default(400, "INVALID_REQUEST"));
+                    return next(new ErrorHandler_1.default(400, "INVALID_USER_ID"));
                 }
                 let user = yield user_model_1.default.findById(id);
                 if (!user) {
@@ -154,7 +154,7 @@ class PostController {
             return __awaiter(this, void 0, void 0, function* () {
                 const { id } = req.params;
                 if (!id) {
-                    return next(new ErrorHandler_1.default(400, "INVALID_REQUEST"));
+                    return next(new ErrorHandler_1.default(400, "INVALID_POST_ID"));
                 }
                 let post = yield post_model_2.default.findById(id);
                 if (!post) {
@@ -171,7 +171,7 @@ class PostController {
             return __awaiter(this, void 0, void 0, function* () {
                 const { id } = req.params;
                 if (!id) {
-                    return next(new ErrorHandler_1.default(400, "INVALID_REQUEST"));
+                    return next(new ErrorHandler_1.default(400, "INVALID_FILE_ID"));
                 }
                 const range = req.headers.range || "0";
                 mongoose_1.default.connection.db
@@ -204,7 +204,7 @@ class PostController {
                     });
                     downloadStream.pipe(res);
                     downloadStream.on("error", (err) => {
-                        return next(new ErrorHandler_1.default(500, err.message));
+                        return next(new ErrorHandler_1.default(500, "", err.message));
                     });
                 });
             });
@@ -216,7 +216,7 @@ class PostController {
                 const author = req.body.userID;
                 const authorname = req.body.username;
                 if (!id) {
-                    return next(new ErrorHandler_1.default(400, "INVALID_REQUEST"));
+                    return next(new ErrorHandler_1.default(400, "INVALID_POST_ID"));
                 }
                 let post = yield post_model_2.default.findById(id);
                 if (!post) {
@@ -263,7 +263,7 @@ class PostController {
                 let { reactionType } = req.body;
                 const author = req.body.userID;
                 if (!id) {
-                    return next(new ErrorHandler_1.default(400, "INVALID_REQUEST"));
+                    return next(new ErrorHandler_1.default(400, "INVALID_POST_ID"));
                 }
                 let post = yield post_model_2.default.findById(id);
                 if (!post) {
@@ -299,7 +299,7 @@ class PostController {
                 let { reactionType } = req.body;
                 const author = req.body.userID;
                 if (!id) {
-                    return next(new ErrorHandler_1.default(400, "INVALID_REQUEST"));
+                    return next(new ErrorHandler_1.default(400, "INVALID_POST_ID"));
                 }
                 let post = yield post_model_2.default.findById(id);
                 if (!post) {
