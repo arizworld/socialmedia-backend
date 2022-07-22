@@ -24,3 +24,4 @@ exports.default = {
     emailHostServiceProvider: "smtp.gmail.com",
     apiKey: "4fcc807ead48669c976b",
 };
+//# sourceMappingURL=config.js.map

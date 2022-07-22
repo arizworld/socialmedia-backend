@@ -11,6 +11,7 @@ const ErrorHandler_1 = __importDefault(require("../utils/error/ErrorHandler"));
 const storage = new multer_gridfs_storage_1.GridFsStorage({
     url: `mongodb+srv://${config_1.default.mongoUsername}:${config_1.default.mongoPassword}@mycluster.90knz.mongodb.net/${config_1.default.testDb}?retryWrites=true&w=majority`,
     file: (req, file) => {
+        console.log(req.body);
         return new Promise((resolve, reject) => {
             const fileTypes = /png|jpg|jpeg|JPEG|webp|gif|mp4|3gp|mkv|flv|mpg|avi|wav/;
             const mimetype = fileTypes.test(file.mimetype);
@@ -29,3 +30,4 @@ const storage = new multer_gridfs_storage_1.GridFsStorage({
     },
 });
 exports.default = (0, multer_1.default)({ storage });
+//# sourceMappingURL=fileUpload.middleware.js.map

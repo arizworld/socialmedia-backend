@@ -1,0 +1,1 @@
+{"version":3,"file":"defaultRoute.js","sourceRoot":"","sources":["../../src/routes/defaultRoute.ts"],"names":[],"mappings":";;;;;AAAA,gFAAyD;AAEzD,+DAA2D;AAC3D,kBAAe;IACb,IAAI,sBAAa,CAAC,GAAG,EAAE,0BAAW,CAAC,GAAG,EAAE,CAAC,GAAY,EAAE,GAAa,EAAE,EAAE;QACtE,GAAG,CAAC,IAAI,CAAC,GAAG,CAAC,EAAE,CAAC,OAAO,CAAC,CAAC,CAAC;IAC5B,CAAC,CAAC;CACH,CAAC"}

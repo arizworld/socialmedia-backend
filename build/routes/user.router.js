@@ -28,3 +28,4 @@ exports.default = [
     new RouterBudler_1.default("/user/forgetpassword", RouterBudler_2.HTTPMethods.put, user.forgetPassword),
     new RouterBudler_1.default("/user/resetpassword/:token", RouterBudler_2.HTTPMethods.put, user.resetPassword),
 ];
+//# sourceMappingURL=user.router.js.map

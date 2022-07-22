@@ -103,3 +103,4 @@ class MongooseService {
     }
 }
 exports.default = MongooseService;
+//# sourceMappingURL=mongoose.service.js.map

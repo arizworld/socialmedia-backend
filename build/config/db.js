@@ -30,3 +30,4 @@ class DB {
 exports.default = DB;
 const bucket = DB.getBucket();
 exports.bucket = bucket;
+//# sourceMappingURL=db.js.map

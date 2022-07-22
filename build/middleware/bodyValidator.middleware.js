@@ -34,3 +34,4 @@ function default_1(req, res, next) {
     next();
 }
 exports.default = default_1;
+//# sourceMappingURL=bodyValidator.middleware.js.map

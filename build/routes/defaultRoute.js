@@ -10,3 +10,4 @@ exports.default = [
         res.send(res.__("hello"));
     }),
 ];
+//# sourceMappingURL=defaultRoute.js.map

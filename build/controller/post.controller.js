@@ -36,11 +36,9 @@ class PostController {
                         });
                     });
                 }
-                const title = req.body.title;
-                const description = req.body.description;
+                const { title, description, tags } = req.fields; //if code reaches here this fields must be there
                 const author = req.body.userID;
                 const authorname = req.body.username;
-                const tags = req.body.tags || [];
                 const likes = [];
                 if (!author || !authorname) {
                     return next(new ErrorHandler_1.default(403, "AUTHENTICATION_REQUIRED"));
@@ -74,10 +72,8 @@ class PostController {
                         });
                     });
                 }
-                const title = req.body.title;
-                const description = req.body.description;
+                const { title, description, tags } = req.fields;
                 const author = req.body.userID;
-                const tags = req.body.tags || [];
                 const { id } = req.params;
                 if (!id) {
                     return next(new ErrorHandler_1.default(400, "INVALID_POST_ID"));
@@ -332,3 +328,4 @@ class PostController {
     }
 }
 exports.default = PostController;
+//# sourceMappingURL=post.controller.js.map

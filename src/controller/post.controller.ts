@@ -32,11 +32,9 @@ export default class PostController {
         });
       });
     }
-    const title = req.body.title;
-    const description = req.body.description;
+    const { title, description, tags } = req.fields as any; //if code reaches here this fields must be there
     const author = req.body.userID;
     const authorname = req.body.username;
-    const tags = req.body.tags || [];
     const likes: Like[] = [];
     if (!author || !authorname) {
       return next(new ErrorHandler(403, "AUTHENTICATION_REQUIRED"));
@@ -75,10 +73,8 @@ export default class PostController {
         });
       });
     }
-    const title = req.body.title;
-    const description = req.body.description;
+    const { title, description, tags } = req.fields as any;
     const author = req.body.userID;
-    const tags = req.body.tags || [];
     const { id } = req.params;
     if (!id) {
       return next(new ErrorHandler(400, "INVALID_POST_ID"));

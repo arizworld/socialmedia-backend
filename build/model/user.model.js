@@ -92,3 +92,4 @@ userSchema.methods.comparePassword = function (password) {
 const User = mongoose_1.default.model("User", userSchema);
 const UserServices = new mongoose_service_1.default(User);
 exports.default = UserServices;
+//# sourceMappingURL=user.model.js.map

@@ -13,3 +13,4 @@ i18n.configure({
     autoReload: true,
 });
 exports.default = i18n;
+//# sourceMappingURL=internationalization.middleware.js.map

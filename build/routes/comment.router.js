@@ -18,3 +18,4 @@ exports.default = [
     new RouterBudler_1.default("/post/:id/comment/:cid/reaction", RouterBudler_2.HTTPMethods.patch, comment.updateReaction, [auth_middleware_1.default]),
     new RouterBudler_1.default("/post/:id/comment/:cid/reaction", RouterBudler_2.HTTPMethods.del, comment.removeReaction, [auth_middleware_1.default]),
 ];
+//# sourceMappingURL=comment.router.js.map

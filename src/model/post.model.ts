@@ -36,13 +36,13 @@ const postSchema: mongoose.Schema = new mongoose.Schema<PostStructure>(
       type: String,
       required: [true, "Please Provide valid title"],
       minLength: [5, "Title can not be less than 5 characters"],
-      maxLength: [35, "Title can not exceed 30 characters"],
+      maxLength: [35, "Title can not exceed 35 characters"],
     },
     description: {
       type: String,
       required: [true, "Please Provide valid description"],
-      minLength: [150, "Title can not be less than 150 characters"],
-      maxLength: [1000, "Title can not exceed 30 characters"],
+      minLength: [150, "Description can not be less than 150 characters"],
+      maxLength: [1000, "Description can not exceed 1000 characters"],
     },
     author: {
       type: mongoose.Schema.Types.ObjectId,
@@ -99,5 +99,7 @@ postSchema.virtual("comments", {
   foreignField: "postId",
 });
 const Post = mongoose.model<PostModel>("Post", postSchema);
+import m2s from "mongoose-to-swagger";
+console.log(m2s(Post));
 const PostServices = new MongooseService<PostModel, PostStructure>(Post);
 export default PostServices;

@@ -29,3 +29,4 @@ class UserAggregation extends ApiFeatures_1.default {
     }
 }
 exports.default = UserAggregation;
+//# sourceMappingURL=UserAggregation.js.map

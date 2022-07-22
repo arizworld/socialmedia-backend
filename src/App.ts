@@ -16,6 +16,8 @@ import defaultRoute from "./routes/defaultRoute";
 import userRoute from "./routes/user.router";
 import postRoute from "./routes/post.router";
 import commentRoute from "./routes/comment.router";
+import swaggerDocument from "./swagger.json";
+import { serve, setup } from "swagger-ui-express";
 
 export default class App {
   private app: express.Application;
@@ -23,7 +25,8 @@ export default class App {
     this.app = express();
     this.initialzeDatabase();
     this.initializeMiddlewares();
-    this.initializeRoutes([defaultRoute, userRoute, postRoute, commentRoute]);
+    this.app.use("/api/v1/documentaion", serve, setup(swaggerDocument));
+    this.initializeRoutes([userRoute, postRoute, commentRoute]);
     this.initializeErrorHandler();
   }
   private initializeRoutes(routeHandlers: RouterBundler[][]) {
@@ -41,7 +44,7 @@ export default class App {
   }
   private initializeMiddlewares() {
     this.app.use(express.json());
-    this.app.use(express.urlencoded({ extended: false }));
+    this.app.use(express.urlencoded({ extended: true }));
     this.app.use(cookieParser());
     this.app.use(i18n.init);
   }

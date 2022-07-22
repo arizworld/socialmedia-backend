@@ -10,3 +10,4 @@ class AppRouter {
     }
 }
 exports.default = AppRouter;
+//# sourceMappingURL=AppRouter.js.map

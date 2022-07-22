@@ -15,17 +15,18 @@ const error_middleware_1 = require("./middleware/error.middleware");
 const logger_1 = require("./utils/logger");
 // import database
 const db_1 = __importDefault(require("./config/db"));
-// import routes
-const defaultRoute_1 = __importDefault(require("./routes/defaultRoute"));
 const user_router_1 = __importDefault(require("./routes/user.router"));
 const post_router_1 = __importDefault(require("./routes/post.router"));
 const comment_router_1 = __importDefault(require("./routes/comment.router"));
+const swagger_json_1 = __importDefault(require("./swagger.json"));
+const swagger_ui_express_1 = require("swagger-ui-express");
 class App {
     constructor() {
         this.app = (0, express_1.default)();
         this.initialzeDatabase();
         this.initializeMiddlewares();
-        this.initializeRoutes([defaultRoute_1.default, user_router_1.default, post_router_1.default, comment_router_1.default]);
+        this.app.use("/api/v1/documentaion", swagger_ui_express_1.serve, (0, swagger_ui_express_1.setup)(swagger_json_1.default));
+        this.initializeRoutes([user_router_1.default, post_router_1.default, comment_router_1.default]);
         this.initializeErrorHandler();
     }
     initializeRoutes(routeHandlers) {
@@ -43,7 +44,7 @@ class App {
     }
     initializeMiddlewares() {
         this.app.use(express_1.default.json());
-        this.app.use(express_1.default.urlencoded({ extended: false }));
+        this.app.use(express_1.default.urlencoded({ extended: true }));
         this.app.use((0, cookie_parser_1.default)());
         this.app.use(internationalization_middleware_1.default.init);
     }
@@ -58,3 +59,4 @@ class App {
     }
 }
 exports.default = App;
+//# sourceMappingURL=App.js.map

@@ -65,6 +65,7 @@ export default class UserController {
     if (user.image) {
       user.image.data = undefined;
     }
+    console.log("hii");
     res.status(200).json({
       success: true,
       user,

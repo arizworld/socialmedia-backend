@@ -36,3 +36,4 @@ exports.default = (0, catchAsyncErrors_1.default)(function (req, res, next) {
         next(new ErrorHandler_1.default(400, "INVALID_CREDENTIALS"));
     });
 });
+//# sourceMappingURL=auth.middleware.js.map

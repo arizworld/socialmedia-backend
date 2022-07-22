@@ -71,6 +71,7 @@ class UserController {
                 if (user.image) {
                     user.image.data = undefined;
                 }
+                console.log("hii");
                 res.status(200).json({
                     success: true,
                     user,
@@ -280,3 +281,4 @@ class UserController {
     }
 }
 exports.default = UserController;
+//# sourceMappingURL=user.controller.js.map

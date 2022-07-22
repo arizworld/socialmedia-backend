@@ -6,3 +6,4 @@ function catchAsyncErrors(fn) {
     };
 }
 exports.default = catchAsyncErrors;
+//# sourceMappingURL=catchAsyncErrors.js.map

@@ -59,3 +59,4 @@ const commentSchema = new mongoose_1.default.Schema({
 const Comment = mongoose_1.default.model("Comment", commentSchema);
 const CommentServices = new mongoose_service_1.default(Comment);
 exports.default = CommentServices;
+//# sourceMappingURL=comments.model.js.map

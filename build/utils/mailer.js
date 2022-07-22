@@ -41,3 +41,4 @@ function sendEMail(mailOptions) {
     });
 }
 exports.default = sendEMail;
+//# sourceMappingURL=mailer.js.map

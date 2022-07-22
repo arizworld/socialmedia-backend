@@ -42,3 +42,4 @@ class PostAggregation extends ApiFeatures_1.default {
     }
 }
 exports.default = PostAggregation;
+//# sourceMappingURL=PostAggregation.js.map
