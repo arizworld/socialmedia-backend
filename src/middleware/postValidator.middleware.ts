@@ -6,7 +6,7 @@ interface PostBodyPartial {
 }
 
 export default function (req: Request, res: Response, next: NextFunction) {
-  const { title, description } = req.fields as any;
+  const { title, description } = req.body as any;
   let postBody: PostBodyPartial = { title, description };
   let key: keyof PostBodyPartial;
   for (key in postBody) {

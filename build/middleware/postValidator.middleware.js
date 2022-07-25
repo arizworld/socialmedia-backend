@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 function default_1(req, res, next) {
-    const { title, description } = req.fields;
+    const { title, description } = req.body;
     let postBody = { title, description };
     let key;
     for (key in postBody) {

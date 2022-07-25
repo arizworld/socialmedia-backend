@@ -99,7 +99,5 @@ postSchema.virtual("comments", {
   foreignField: "postId",
 });
 const Post = mongoose.model<PostModel>("Post", postSchema);
-import m2s from "mongoose-to-swagger";
-console.log(m2s(Post));
 const PostServices = new MongooseService<PostModel, PostStructure>(Post);
 export default PostServices;

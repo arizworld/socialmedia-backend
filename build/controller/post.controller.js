@@ -36,7 +36,7 @@ class PostController {
                         });
                     });
                 }
-                const { title, description, tags } = req.fields; //if code reaches here this fields must be there
+                const { title, description, tags } = req.body;
                 const author = req.body.userID;
                 const authorname = req.body.username;
                 const likes = [];
@@ -72,7 +72,7 @@ class PostController {
                         });
                     });
                 }
-                const { title, description, tags } = req.fields;
+                const { title, description, tags } = req.body;
                 const author = req.body.userID;
                 const { id } = req.params;
                 if (!id) {
@@ -123,7 +123,7 @@ class PostController {
                     .customSort()
                     .pagination().pipeline;
                 const data = yield post_model_2.default.aggregate(pipeline);
-                res.status(200).json({ success: true, data });
+                res.status(200).json({ success: true, data: data[0] });
             });
         });
         this.getUserSpecificPosts = (0, catchAsyncErrors_1.default)(function (req, res, next) {
@@ -143,7 +143,7 @@ class PostController {
                     .customSort()
                     .pagination().pipeline;
                 const data = yield post_model_2.default.aggregate(pipeline);
-                res.status(200).json({ success: true, data: data });
+                res.status(200).json({ success: true, data: data[0] });
             });
         });
         this.deletePost = (0, catchAsyncErrors_1.default)(function (req, res, next) {
@@ -292,7 +292,6 @@ class PostController {
         this.removeReaction = (0, catchAsyncErrors_1.default)(function (req, res, next) {
             return __awaiter(this, void 0, void 0, function* () {
                 const { id } = req.params;
-                let { reactionType } = req.body;
                 const author = req.body.userID;
                 if (!id) {
                     return next(new ErrorHandler_1.default(400, "INVALID_POST_ID"));
@@ -321,7 +320,7 @@ class PostController {
                 res.json({
                     success: true,
                     post,
-                    message: `${reactionType} ${res.__("REACTION_REMOVED")}`,
+                    message: `reaction ${res.__("REACTION_REMOVED")}`,
                 });
             });
         });

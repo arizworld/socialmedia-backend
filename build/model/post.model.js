@@ -80,8 +80,6 @@ postSchema.virtual("comments", {
     foreignField: "postId",
 });
 const Post = mongoose_1.default.model("Post", postSchema);
-const mongoose_to_swagger_1 = __importDefault(require("mongoose-to-swagger"));
-console.log((0, mongoose_to_swagger_1.default)(Post));
 const PostServices = new mongoose_service_1.default(Post);
 exports.default = PostServices;
 //# sourceMappingURL=post.model.js.map

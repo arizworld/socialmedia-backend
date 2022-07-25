@@ -32,7 +32,7 @@ export default class PostController {
         });
       });
     }
-    const { title, description, tags } = req.fields as any; //if code reaches here this fields must be there
+    const { title, description, tags } = req.body;
     const author = req.body.userID;
     const authorname = req.body.username;
     const likes: Like[] = [];
@@ -73,7 +73,7 @@ export default class PostController {
         });
       });
     }
-    const { title, description, tags } = req.fields as any;
+    const { title, description, tags } = req.body as any;
     const author = req.body.userID;
     const { id } = req.params;
     if (!id) {
@@ -130,7 +130,7 @@ export default class PostController {
       .pagination().pipeline;
 
     const data = await PostServices.aggregate(pipeline);
-    res.status(200).json({ success: true, data });
+    res.status(200).json({ success: true, data: data[0] });
   });
   getUserSpecificPosts = catchAsyncErrors(async function (
     req: Request,
@@ -152,7 +152,7 @@ export default class PostController {
       .customSort()
       .pagination().pipeline;
     const data = await PostServices.aggregate(pipeline);
-    res.status(200).json({ success: true, data: data });
+    res.status(200).json({ success: true, data: data[0] });
   });
 
   deletePost = catchAsyncErrors(async function (
@@ -319,7 +319,6 @@ export default class PostController {
     next: NextFunction
   ) {
     const { id } = req.params;
-    let { reactionType } = req.body;
     const author = req.body.userID;
     if (!id) {
       return next(new ErrorHandler(400, "INVALID_POST_ID"));
@@ -351,7 +350,7 @@ export default class PostController {
     res.json({
       success: true,
       post,
-      message: `${reactionType} ${res.__("REACTION_REMOVED")}`,
+      message: `reaction ${res.__("REACTION_REMOVED")}`,
     });
   });
 }

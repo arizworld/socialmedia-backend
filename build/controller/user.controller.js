@@ -48,7 +48,7 @@ class UserController {
                     newUser.image.data = undefined;
                 }
                 res
-                    .status(200)
+                    .status(201)
                     .json({ success: true, user: newUser, message: res.__("USER_CREATED") });
             });
         });
@@ -71,7 +71,6 @@ class UserController {
                 if (user.image) {
                     user.image.data = undefined;
                 }
-                console.log("hii");
                 res.status(200).json({
                     success: true,
                     user,
@@ -259,7 +258,7 @@ class UserController {
                     .hideImageData()
                     .pagination().pipeline;
                 const data = yield user_model_1.default.aggregate(pipeline);
-                res.status(200).json({ success: true, data });
+                res.status(200).json({ success: true, data: data[0] });
             });
         });
         this.getUser = (0, catchAsyncErrors_1.default)(function (req, res, next) {

@@ -26,7 +26,7 @@ export default class App {
     this.initialzeDatabase();
     this.initializeMiddlewares();
     this.app.use("/api/v1/documentaion", serve, setup(swaggerDocument));
-    this.initializeRoutes([userRoute, postRoute, commentRoute]);
+    this.initializeRoutes([defaultRoute, userRoute, postRoute, commentRoute]);
     this.initializeErrorHandler();
   }
   private initializeRoutes(routeHandlers: RouterBundler[][]) {

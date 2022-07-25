@@ -15,6 +15,8 @@ const error_middleware_1 = require("./middleware/error.middleware");
 const logger_1 = require("./utils/logger");
 // import database
 const db_1 = __importDefault(require("./config/db"));
+// import routes
+const defaultRoute_1 = __importDefault(require("./routes/defaultRoute"));
 const user_router_1 = __importDefault(require("./routes/user.router"));
 const post_router_1 = __importDefault(require("./routes/post.router"));
 const comment_router_1 = __importDefault(require("./routes/comment.router"));
@@ -26,7 +28,7 @@ class App {
         this.initialzeDatabase();
         this.initializeMiddlewares();
         this.app.use("/api/v1/documentaion", swagger_ui_express_1.serve, (0, swagger_ui_express_1.setup)(swagger_json_1.default));
-        this.initializeRoutes([user_router_1.default, post_router_1.default, comment_router_1.default]);
+        this.initializeRoutes([defaultRoute_1.default, user_router_1.default, post_router_1.default, comment_router_1.default]);
         this.initializeErrorHandler();
     }
     initializeRoutes(routeHandlers) {

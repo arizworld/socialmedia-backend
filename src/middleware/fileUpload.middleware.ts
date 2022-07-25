@@ -7,13 +7,11 @@ import ErrorHandler from "../utils/error/ErrorHandler";
 const storage = new GridFsStorage({
   url: `mongodb+srv://${config.mongoUsername}:${config.mongoPassword}@mycluster.90knz.mongodb.net/${config.testDb}?retryWrites=true&w=majority`,
   file: (req: Request, file) => {
-    console.log(req.body);
     return new Promise((resolve, reject) => {
       const fileTypes =
         /png|jpg|jpeg|JPEG|webp|gif|mp4|3gp|mkv|flv|mpg|avi|wav/;
       const mimetype = fileTypes.test(file.mimetype);
       const extname = fileTypes.test(path.extname(file.originalname));
-      console.log(mimetype, extname);
       if (mimetype && extname) {
         const filename = file.originalname;
         const fileInfo = {

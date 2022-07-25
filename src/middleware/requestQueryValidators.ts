@@ -11,7 +11,7 @@ export default function (req: Request, res: Response, next: NextFunction) {
   if (queryCopy.srt && !(queryCopy.srt === "ml" || queryCopy.srt === "mr")) {
     return res.status(400).json({
       success: false,
-      message: res.__("INVALID_QUERY_SORT"),
+      message: `${res.__("INVALID_QUERY_SORT")}: ${queryCopy.srt}`,
     });
   }
   validQueries.forEach((q) => delete queryCopy[q]);
@@ -19,7 +19,7 @@ export default function (req: Request, res: Response, next: NextFunction) {
   if (keys.length) {
     return res.status(400).json({
       success: false,
-      message: res.__("INVALID_QUERY_PARAMS"),
+      message: `${res.__("INVALID_QUERY_PARAMS")} ${keys.join(",")}`,
     });
   }
   next();
