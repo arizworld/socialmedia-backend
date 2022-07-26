@@ -215,7 +215,9 @@ export default class UserController {
         .toBuffer();
       user.image = {
         data: imageData,
-        url: `${req.protocol}://${req.get("host")}/user/${userId}/avatar`,
+        url: `${req.protocol}://${req.get(
+          "host"
+        )}/api/v1/user/${userId}/avatar`,
       };
       await user.save();
       res.status(200).json({

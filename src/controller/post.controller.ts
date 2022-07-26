@@ -28,7 +28,7 @@ export default class PostController {
           mediaRef: file.id,
           mediaUrl: `${req.protocol}://${req.get(
             "host"
-          )}/post/${file.id.toString()}/media`,
+          )}/api/v1/post/${file.id.toString()}/media`,
         });
       });
     }
@@ -69,7 +69,7 @@ export default class PostController {
           mediaRef: file.id,
           mediaUrl: `${req.protocol}://${req.get(
             "host"
-          )}/post/${file.id.toString()}/media`,
+          )}/api/v1/post/${file.id.toString()}/media`,
         });
       });
     }
