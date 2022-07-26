@@ -20,7 +20,7 @@
   },
   "servers": [
     {
-      "url": "http://localhost:1020"
+      "url": "http://localhost:1020/api/v1"
     }
   ],
   "paths": {
@@ -1006,6 +1006,62 @@
         ]
       }
     },
+    "/user/{userId}/avatar": {
+      "parameters": [
+        {
+          "schema": {
+            "type": "string"
+          },
+          "name": "userId",
+          "in": "path",
+          "required": true
+        }
+      ],
+      "get": {
+        "summary": "Show users profile pic.",
+        "tags": ["user"],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                },
+                "examples": {}
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                },
+                "examples": {
+                  "user not found": {
+                    "value": {
+                      "success": false,
+                      "message": "User not found"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "operationId": "get-user-userId-avatar",
+        "description": "Hit this endpoint to show user's profile pic",
+        "security": [
+          {
+            "apikey": []
+          }
+        ]
+      }
+    },
     "/user/forgetpassword": {
       "put": {
         "summary": "Forget password",
@@ -1729,249 +1785,6 @@
         ]
       }
     },
-    "/post/new": {
-      "post": {
-        "summary": "Create post",
-        "operationId": "post-post-new",
-        "responses": {
-          "201": {
-            "description": "Created",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean"
-                    },
-                    "post": {
-                      "type": "object",
-                      "properties": {
-                        "title": {
-                          "type": "string"
-                        },
-                        "description": {
-                          "type": "string"
-                        },
-                        "author": {
-                          "type": "string"
-                        },
-                        "authorname": {
-                          "type": "string"
-                        },
-                        "media": {
-                          "type": "array",
-                          "items": {
-                            "type": "object",
-                            "properties": {
-                              "mediaRef": {
-                                "type": "string"
-                              },
-                              "mediaUrl": {
-                                "type": "string"
-                              },
-                              "_id": {
-                                "type": "string"
-                              }
-                            }
-                          }
-                        },
-                        "likes": {
-                          "type": "array",
-                          "items": {
-                            "type": "object",
-                            "properties": {}
-                          }
-                        },
-                        "likecount": {
-                          "type": "integer"
-                        },
-                        "tags": {
-                          "type": "array",
-                          "items": {
-                            "type": "string"
-                          }
-                        },
-                        "_id": {
-                          "type": "string"
-                        },
-                        "createdAt": {
-                          "type": "string"
-                        },
-                        "updatedAt": {
-                          "type": "string"
-                        },
-                        "__v": {
-                          "type": "integer"
-                        }
-                      }
-                    },
-                    "message": {
-                      "type": "string"
-                    }
-                  },
-                  "x-examples": {
-                    "example-1": {
-                      "success": true,
-                      "post": {
-                        "title": "The brown fox story",
-                        "description": "Once a fix was feeling very hungry . She wandered around in search of food. Finally having exhausted herself , she sat under a tree. She noticed a crow sitting on the tree. He had a small piece of meat in its beak. The Fox wanted to have the piece for herself at all costs . She thought of a good plan. Changing her tone she said Dear crow , your voice is so swee I would be so lucky if I get to hear a song in your sweet voice . The crow was delighted because of the unexpected praise he got. The moment he started singing , the piece fell from his mouth. The Fox ate it at once.Moral is Think before you act Don''t be fooled by false praise",
-                        "author": "62de52f140327b2c63fb15a9",
-                        "authorname": "rando",
-                        "media": [
-                          {
-                            "mediaRef": "62de52fb40327b2c63fb15ac",
-                            "mediaUrl": "http://localhost:1020/post/62de52fb40327b2c63fb15ac/media",
-                            "_id": "62de530340327b2c63fb164b"
-                          },
-                          {
-                            "mediaRef": "62de530240327b2c63fb1646",
-                            "mediaUrl": "http://localhost:1020/post/62de530240327b2c63fb1646/media",
-                            "_id": "62de530340327b2c63fb164c"
-                          }
-                        ],
-                        "likes": [],
-                        "likecount": 0,
-                        "tags": ["greed", "cunning"],
-                        "_id": "62de530340327b2c63fb164a",
-                        "createdAt": "2022-07-25T08:23:31.507Z",
-                        "updatedAt": "2022-07-25T08:23:31.507Z",
-                        "__v": 0
-                      },
-                      "message": "Post created successfully"
-                    }
-                  }
-                },
-                "examples": {
-                  "post created": {
-                    "value": {
-                      "success": true,
-                      "post": {
-                        "title": "The brown fox story",
-                        "description": "Once a fix was feeling very hungry . She wandered around in search of food. Finally having exhausted herself , she sat under a tree. She noticed a crow sitting on the tree. He had a small piece of meat in its beak. The Fox wanted to have the piece for herself at all costs . She thought of a good plan. Changing her tone she said Dear crow , your voice is so swee I would be so lucky if I get to hear a song in your sweet voice . The crow was delighted because of the unexpected praise he got. The moment he started singing , the piece fell from his mouth. The Fox ate it at once.Moral is Think before you act Don''t be fooled by false praise",
-                        "author": "62de52f140327b2c63fb15a9",
-                        "authorname": "rando",
-                        "media": [
-                          {
-                            "mediaRef": "62de52fb40327b2c63fb15ac",
-                            "mediaUrl": "http://localhost:1020/post/62de52fb40327b2c63fb15ac/media",
-                            "_id": "62de530340327b2c63fb164b"
-                          },
-                          {
-                            "mediaRef": "62de530240327b2c63fb1646",
-                            "mediaUrl": "http://localhost:1020/post/62de530240327b2c63fb1646/media",
-                            "_id": "62de530340327b2c63fb164c"
-                          }
-                        ],
-                        "likes": [],
-                        "likecount": 0,
-                        "tags": ["greed", "cunning"],
-                        "_id": "62de530340327b2c63fb164a",
-                        "createdAt": "2022-07-25T08:23:31.507Z",
-                        "updatedAt": "2022-07-25T08:23:31.507Z",
-                        "__v": 0
-                      },
-                      "message": "Post created successfully"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean"
-                    },
-                    "message": {
-                      "type": "string"
-                    }
-                  },
-                  "x-examples": {
-                    "example-1": {
-                      "success": false,
-                      "message": "title cannot be empty"
-                    }
-                  }
-                },
-                "examples": {
-                  "validation error": {
-                    "value": {
-                      "success": false,
-                      "message": "title cannot be empty"
-                    }
-                  },
-                  "invalid token": {
-                    "value": {
-                      "success": false,
-                      "message": "title cannot be empty"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        },
-        "description": "This end point creates a new post for a user.",
-        "security": [
-          {
-            "apikey": []
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "multipart/form-data": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "title": {
-                    "type": "string",
-                    "minLength": 5,
-                    "maxLength": 35
-                  },
-                  "description": {
-                    "type": "string",
-                    "minLength": 150,
-                    "maxLength": 1000
-                  },
-                  "tags": {
-                    "type": "array",
-                    "items": {
-                      "type": "string"
-                    }
-                  },
-                  "media": {
-                    "type": "array",
-                    "items": {
-                      "type": "string",
-                      "format": "binary"
-                    }
-                  }
-                },
-                "required": ["title", "description"]
-              },
-              "examples": {
-                "The brown fox": {
-                  "value": {
-                    "title": "The brown fox story",
-                    "description": "Once a fix was feeling very hungry . She wandered around in search of food. Finally having exhausted herself , she sat under a tree. She noticed a crow sitting on the tree. He had a small piece of meat in its beak. The Fox wanted to have the piece for herself at all costs . She thought of a good plan. Changing her tone she said Dear crow , your voice is so swee I would be so lucky if I get to hear a song in your sweet voice . The crow was delighted because of the unexpected praise he got. The moment he started singing , the piece fell from his mouth. The Fox ate it at once.Moral is Think before you act Don't be fooled by false praise",
-                    "tags": ["greed", "cunning"],
-                    "media": ["brownfox.jpg", "brownfox.mp4"]
-                  }
-                }
-              }
-            }
-          },
-          "description": "Title must be 5 characters long and below 35 characters.Description must be 150-1000 characters long.tags will be an array of strings. Media can be an array of files with key \"media\". Accepted file types are -  png|jpg|jpeg|JPEG|webp|gif|mp4|3gp|mkv|flv|mpg|avi|wav"
-        },
-        "tags": ["post"]
-      }
-    },
     "/post/{postId}": {
       "parameters": [
         {
@@ -2423,6 +2236,296 @@
           }
         ],
         "tags": ["post"]
+      }
+    },
+    "/post/new": {
+      "post": {
+        "summary": "Create post",
+        "operationId": "post-post-new",
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "post": {
+                      "type": "object",
+                      "properties": {
+                        "title": {
+                          "type": "string"
+                        },
+                        "description": {
+                          "type": "string"
+                        },
+                        "author": {
+                          "type": "string"
+                        },
+                        "authorname": {
+                          "type": "string"
+                        },
+                        "media": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "mediaRef": {
+                                "type": "string"
+                              },
+                              "mediaUrl": {
+                                "type": "string"
+                              },
+                              "_id": {
+                                "type": "string"
+                              }
+                            }
+                          }
+                        },
+                        "likes": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {}
+                          }
+                        },
+                        "likecount": {
+                          "type": "integer"
+                        },
+                        "tags": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        },
+                        "_id": {
+                          "type": "string"
+                        },
+                        "createdAt": {
+                          "type": "string"
+                        },
+                        "updatedAt": {
+                          "type": "string"
+                        },
+                        "__v": {
+                          "type": "integer"
+                        }
+                      }
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "x-examples": {
+                    "example-1": {
+                      "success": true,
+                      "post": {
+                        "title": "The brown fox story",
+                        "description": "Once a fix was feeling very hungry . She wandered around in search of food. Finally having exhausted herself , she sat under a tree. She noticed a crow sitting on the tree. He had a small piece of meat in its beak. The Fox wanted to have the piece for herself at all costs . She thought of a good plan. Changing her tone she said Dear crow , your voice is so swee I would be so lucky if I get to hear a song in your sweet voice . The crow was delighted because of the unexpected praise he got. The moment he started singing , the piece fell from his mouth. The Fox ate it at once.Moral is Think before you act Don''t be fooled by false praise",
+                        "author": "62de52f140327b2c63fb15a9",
+                        "authorname": "rando",
+                        "media": [
+                          {
+                            "mediaRef": "62de52fb40327b2c63fb15ac",
+                            "mediaUrl": "http://localhost:1020/post/62de52fb40327b2c63fb15ac/media",
+                            "_id": "62de530340327b2c63fb164b"
+                          },
+                          {
+                            "mediaRef": "62de530240327b2c63fb1646",
+                            "mediaUrl": "http://localhost:1020/post/62de530240327b2c63fb1646/media",
+                            "_id": "62de530340327b2c63fb164c"
+                          }
+                        ],
+                        "likes": [],
+                        "likecount": 0,
+                        "tags": ["greed", "cunning"],
+                        "_id": "62de530340327b2c63fb164a",
+                        "createdAt": "2022-07-25T08:23:31.507Z",
+                        "updatedAt": "2022-07-25T08:23:31.507Z",
+                        "__v": 0
+                      },
+                      "message": "Post created successfully"
+                    }
+                  }
+                },
+                "examples": {
+                  "post created": {
+                    "value": {
+                      "success": true,
+                      "post": {
+                        "title": "The brown fox story",
+                        "description": "Once a fix was feeling very hungry . She wandered around in search of food. Finally having exhausted herself , she sat under a tree. She noticed a crow sitting on the tree. He had a small piece of meat in its beak. The Fox wanted to have the piece for herself at all costs . She thought of a good plan. Changing her tone she said Dear crow , your voice is so swee I would be so lucky if I get to hear a song in your sweet voice . The crow was delighted because of the unexpected praise he got. The moment he started singing , the piece fell from his mouth. The Fox ate it at once.Moral is Think before you act Don''t be fooled by false praise",
+                        "author": "62de52f140327b2c63fb15a9",
+                        "authorname": "rando",
+                        "media": [
+                          {
+                            "mediaRef": "62de52fb40327b2c63fb15ac",
+                            "mediaUrl": "http://localhost:1020/post/62de52fb40327b2c63fb15ac/media",
+                            "_id": "62de530340327b2c63fb164b"
+                          },
+                          {
+                            "mediaRef": "62de530240327b2c63fb1646",
+                            "mediaUrl": "http://localhost:1020/post/62de530240327b2c63fb1646/media",
+                            "_id": "62de530340327b2c63fb164c"
+                          }
+                        ],
+                        "likes": [],
+                        "likecount": 0,
+                        "tags": ["greed", "cunning"],
+                        "_id": "62de530340327b2c63fb164a",
+                        "createdAt": "2022-07-25T08:23:31.507Z",
+                        "updatedAt": "2022-07-25T08:23:31.507Z",
+                        "__v": 0
+                      },
+                      "message": "Post created successfully"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "x-examples": {
+                    "example-1": {
+                      "success": false,
+                      "message": "title cannot be empty"
+                    }
+                  }
+                },
+                "examples": {
+                  "validation error": {
+                    "value": {
+                      "success": false,
+                      "message": "title cannot be empty"
+                    }
+                  },
+                  "invalid token": {
+                    "value": {
+                      "success": false,
+                      "message": "title cannot be empty"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "description": "This end point creates a new post for a user.",
+        "security": [
+          {
+            "apikey": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "minLength": 5,
+                    "maxLength": 35
+                  },
+                  "description": {
+                    "type": "string",
+                    "minLength": 150,
+                    "maxLength": 1000
+                  },
+                  "tags": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "media": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "binary"
+                    }
+                  }
+                },
+                "required": ["title", "description"]
+              },
+              "examples": {
+                "The brown fox": {
+                  "value": {
+                    "title": "The brown fox story",
+                    "description": "Once a fix was feeling very hungry . She wandered around in search of food. Finally having exhausted herself , she sat under a tree. She noticed a crow sitting on the tree. He had a small piece of meat in its beak. The Fox wanted to have the piece for herself at all costs . She thought of a good plan. Changing her tone she said Dear crow , your voice is so swee I would be so lucky if I get to hear a song in your sweet voice . The crow was delighted because of the unexpected praise he got. The moment he started singing , the piece fell from his mouth. The Fox ate it at once.Moral is Think before you act Don't be fooled by false praise",
+                    "tags": ["greed", "cunning"],
+                    "media": ["brownfox.jpg", "brownfox.mp4"]
+                  }
+                }
+              }
+            }
+          },
+          "description": "Title must be 5 characters long and below 35 characters.Description must be 150-1000 characters long.tags will be an array of strings. Media can be an array of files with key \"media\". Accepted file types are -  png|jpg|jpeg|JPEG|webp|gif|mp4|3gp|mkv|flv|mpg|avi|wav"
+        },
+        "tags": ["post"]
+      }
+    },
+    "/post/{mediaRef}/media": {
+      "parameters": [
+        {
+          "schema": {
+            "type": "string"
+          },
+          "name": "mediaRef",
+          "in": "path",
+          "required": true
+        }
+      ],
+      "get": {
+        "summary": "Stream post media.",
+        "tags": ["post"],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                },
+                "examples": {
+                  "no file found": {
+                    "value": {
+                      "success": false,
+                      "message": "User not found"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "operationId": "get-post-mediaRef-media",
+        "security": [
+          {
+            "apikey": []
+          }
+        ],
+        "description": "Hit this endpoint to stream files from post media referances. In case you want to stream from the media link just include the api key at the end."
       }
     },
     "/user/{userId}/posts": {
