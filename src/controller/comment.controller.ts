@@ -29,7 +29,7 @@ export default class CommentController {
     const data = await CommentServices.aggregate(pipeline);
     res.json({
       success: true,
-      data,
+      data: data[0],
     });
   });
 
@@ -360,7 +360,7 @@ export default class CommentController {
     res.json({
       success: true,
       comment,
-      message: `${reactionType} ${res.__("REACTION_REMOVED")}`,
+      message: `reaction ${res.__("REACTION_REMOVED")}`,
     });
   });
 }

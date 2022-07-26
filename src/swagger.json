@@ -32,7 +32,8 @@
           },
           "name": "userId",
           "in": "path",
-          "required": true
+          "required": true,
+          "description": "the user's  _id"
         }
       ],
       "get": {
@@ -1263,7 +1264,7 @@
             }
           }
         },
-        "description": "This endpoints sets new user password.",
+        "description": "This endpoints sets new user password. The reset password mail forwarded to the user contains the url of this path. So make a page with the same path that user can come to this page and request for password reset.",
         "security": [
           {
             "apikey": []
@@ -2972,9 +2973,66 @@
           "description": "valid reaction types are like,love,haha,care,lol. Default reaction love."
         }
       },
-      "put": {
-        "summary": "update reaction",
-        "operationId": "put-post-postId-reaction",
+      "delete": {
+        "summary": "Remove reaction",
+        "operationId": "delete-post-postId-reaction",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                },
+                "examples": {
+                  "reaction removed": {
+                    "value": {
+                      "success": true,
+                      "post": {
+                        "_id": "62d68493c66b1193baf90e00",
+                        "title": "test post 2",
+                        "description": "skdjfhsdhfkjsdhfksdhfsdhfiusdhfiusdhfihsdifuhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh",
+                        "author": "62d683d17bc23f17bccb3162",
+                        "authorname": "aritra op",
+                        "media": [
+                          {
+                            "mediaRef": "62d68493c66b1193baf90dfb",
+                            "mediaUrl": "http://localhost:1020/post/62d68493c66b1193baf90dfb/media",
+                            "_id": "62d68493c66b1193baf90e01"
+                          },
+                          {
+                            "mediaRef": "62d68493c66b1193baf90dfc",
+                            "mediaUrl": "http://localhost:1020/post/62d68493c66b1193baf90dfc/media",
+                            "_id": "62d68493c66b1193baf90e02"
+                          }
+                        ],
+                        "likes": [],
+                        "likecount": 0,
+                        "tags": ["love", "wisdom"],
+                        "createdAt": "2022-07-19T10:16:51.951Z",
+                        "updatedAt": "2022-07-25T11:21:56.567Z",
+                        "__v": 0
+                      },
+                      "message": "reaction removed"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "description": "remove reaction",
+        "tags": ["post"],
+        "security": [
+          {
+            "apikey": []
+          }
+        ]
+      },
+      "patch": {
+        "summary": "Update reaction to a post.",
+        "operationId": "patch-post-postId-reaction",
         "responses": {
           "200": {
             "description": "OK",
@@ -3116,22 +3174,19 @@
             }
           }
         },
+        "tags": ["post"],
         "description": "update a reaction to the post",
+        "security": [
+          {
+            "apikey": []
+          }
+        ],
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
-                "properties": {
-                  "reactionType": {
-                    "type": "string"
-                  }
-                },
-                "x-examples": {
-                  "example-1": {
-                    "reactionType": "lol"
-                  }
-                }
+                "properties": {}
               },
               "examples": {
                 "update reaction": {
@@ -3143,17 +3198,1194 @@
             }
           },
           "description": "valid reaction types are like,love,haha,care,lol. Default reaction love."
+        }
+      }
+    },
+    "/post/{postId}/comment/all": {
+      "parameters": [
+        {
+          "schema": {
+            "type": "string"
+          },
+          "name": "postId",
+          "in": "path",
+          "required": true
+        }
+      ],
+      "get": {
+        "summary": "Get all comments on a specific post with pagination and sorting...",
+        "tags": ["comment"],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                },
+                "examples": {
+                  "query 1-> ?lt=2&page=1&srt=ml": {
+                    "value": {
+                      "success": true,
+                      "data": {
+                        "Results": [
+                          {
+                            "_id": "62d6871cd6e0d463861dded0",
+                            "text": "updated comment 1",
+                            "author": "62d683d17bc23f17bccb3162",
+                            "authorname": "aritra op",
+                            "postId": "62d684ccc66b1193baf90fe6",
+                            "likes": [
+                              {
+                                "reactionType": "haha",
+                                "authorId": "62d683d17bc23f17bccb3162",
+                                "authorname": "aritra op",
+                                "_id": "62d6889ed6e0d463861ddef9"
+                              },
+                              {
+                                "reactionType": "haha",
+                                "authorId": "62d64cd769cd6ed3b21da086",
+                                "authorname": "aritra",
+                                "_id": "62d688bdd6e0d463861ddf00"
+                              },
+                              {
+                                "reactionType": "care",
+                                "authorId": "62d64e7fca666d9ee74a10c5",
+                                "authorname": "demo3",
+                                "_id": "62d68910d6e0d463861ddf09"
+                              }
+                            ],
+                            "likecount": 3,
+                            "parentId": null,
+                            "createdAt": "2022-07-19T10:27:40.320Z",
+                            "updatedAt": "2022-07-19T10:37:15.050Z",
+                            "__v": 0,
+                            "replies": [
+                              {
+                                "_id": "62d6880ad6e0d463861ddee1",
+                                "text": "reply 1",
+                                "author": "62d683d17bc23f17bccb3162",
+                                "authorname": "aritra op",
+                                "postId": "62d684ccc66b1193baf90fe6",
+                                "likes": [],
+                                "likecount": 0,
+                                "parentId": "62d6871cd6e0d463861dded0",
+                                "createdAt": "2022-07-19T10:31:38.031Z",
+                                "updatedAt": "2022-07-19T10:31:38.031Z",
+                                "__v": 0
+                              },
+                              {
+                                "_id": "62d68810d6e0d463861ddee6",
+                                "text": "reply 2",
+                                "author": "62d683d17bc23f17bccb3162",
+                                "authorname": "aritra op",
+                                "postId": "62d684ccc66b1193baf90fe6",
+                                "likes": [],
+                                "likecount": 0,
+                                "parentId": "62d6871cd6e0d463861dded0",
+                                "createdAt": "2022-07-19T10:31:44.015Z",
+                                "updatedAt": "2022-07-19T10:31:44.015Z",
+                                "__v": 0
+                              },
+                              {
+                                "_id": "62d68814d6e0d463861ddeeb",
+                                "text": "reply 3",
+                                "author": "62d683d17bc23f17bccb3162",
+                                "authorname": "aritra op",
+                                "postId": "62d684ccc66b1193baf90fe6",
+                                "likes": [],
+                                "likecount": 0,
+                                "parentId": "62d6871cd6e0d463861dded0",
+                                "createdAt": "2022-07-19T10:31:48.438Z",
+                                "updatedAt": "2022-07-19T10:31:48.438Z",
+                                "__v": 0
+                              },
+                              {
+                                "_id": "62d68819d6e0d463861ddef0",
+                                "text": "reply 4",
+                                "author": "62d683d17bc23f17bccb3162",
+                                "authorname": "aritra op",
+                                "postId": "62d684ccc66b1193baf90fe6",
+                                "likes": [],
+                                "likecount": 0,
+                                "parentId": "62d6871cd6e0d463861dded0",
+                                "createdAt": "2022-07-19T10:31:53.172Z",
+                                "updatedAt": "2022-07-19T10:31:53.172Z",
+                                "__v": 0
+                              }
+                            ]
+                          },
+                          {
+                            "_id": "62d6870ed6e0d463861ddec4",
+                            "text": "comment 2",
+                            "author": "62d683d17bc23f17bccb3162",
+                            "authorname": "aritra op",
+                            "postId": "62d684ccc66b1193baf90fe6",
+                            "likes": [],
+                            "likecount": 0,
+                            "parentId": null,
+                            "createdAt": "2022-07-19T10:27:26.803Z",
+                            "updatedAt": "2022-07-19T10:27:26.803Z",
+                            "__v": 0,
+                            "replies": []
+                          }
+                        ],
+                        "totalResult": [
+                          {
+                            "count": 5
+                          }
+                        ]
+                      }
+                    }
+                  },
+                  "query 2-> ?srt=mr&lt=1": {
+                    "value": {
+                      "success": true,
+                      "data": {
+                        "Results": [
+                          {
+                            "_id": "62df6d659e0a576e2404f5dc",
+                            "text": "some comment",
+                            "author": "62de52f140327b2c63fb15a9",
+                            "authorname": "rando",
+                            "postId": "62d684ccc66b1193baf90fe6",
+                            "likes": [],
+                            "likecount": 0,
+                            "parentId": null,
+                            "createdAt": "2022-07-26T04:28:21.607Z",
+                            "updatedAt": "2022-07-26T04:28:21.607Z",
+                            "__v": 0,
+                            "replies": [
+                              {
+                                "_id": "62df6e339e0a576e2404f5e3",
+                                "text": "updated comment",
+                                "author": "62de52f140327b2c63fb15a9",
+                                "authorname": "rando",
+                                "postId": "62d684ccc66b1193baf90fe6",
+                                "likes": [],
+                                "likecount": 0,
+                                "parentId": "62df6d659e0a576e2404f5dc",
+                                "createdAt": "2022-07-26T04:31:47.645Z",
+                                "updatedAt": "2022-07-26T04:57:49.835Z",
+                                "__v": 0
+                              }
+                            ]
+                          }
+                        ],
+                        "totalResult": [
+                          {
+                            "count": 5
+                          }
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                },
+                "examples": {
+                  "post not found": {
+                    "value": {
+                      "success": false,
+                      "message": "Post not found"
+                    }
+                  }
+                }
+              }
+            }
+          }
         },
+        "operationId": "get-post-postId-comment-all",
+        "description": "Hit this endpoint to get all comments on a specific post with pagination and sorting. we achive the sorting and pagination behaviour by query parameters as described below.",
         "security": [
           {
             "apikey": []
           }
         ],
-        "tags": ["post"]
+        "parameters": [
+          {
+            "schema": {
+              "type": "number"
+            },
+            "in": "query",
+            "name": "lt",
+            "description": "the value will be the request per page/ no of comment you want to get in a single request. The value defaults to 5"
+          },
+          {
+            "schema": {
+              "type": "number"
+            },
+            "in": "query",
+            "name": "page",
+            "description": "the page no you want to request for. the value defaults to 1"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "name": "srt",
+            "description": "you can sort the comments by most liked ones in that case the value will be -> ml or by most recent ones in that case value will be -> mr"
+          }
+        ]
+      }
+    },
+    "/post/{postId}/comment/new": {
+      "parameters": [
+        {
+          "schema": {
+            "type": "string"
+          },
+          "name": "postId",
+          "in": "path",
+          "required": true
+        }
+      ],
+      "post": {
+        "summary": "Add Comment to a Post.",
+        "operationId": "post-post-postId-new",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "comment": {
+                      "type": "object",
+                      "properties": {
+                        "text": {
+                          "type": "string"
+                        },
+                        "author": {
+                          "type": "string"
+                        },
+                        "authorname": {
+                          "type": "string"
+                        },
+                        "postId": {
+                          "type": "string"
+                        },
+                        "likes": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {}
+                          }
+                        },
+                        "likecount": {
+                          "type": "integer"
+                        },
+                        "parentId": {
+                          "type": "null"
+                        },
+                        "_id": {
+                          "type": "string"
+                        },
+                        "createdAt": {
+                          "type": "string"
+                        },
+                        "updatedAt": {
+                          "type": "string"
+                        },
+                        "__v": {
+                          "type": "integer"
+                        }
+                      }
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "x-examples": {
+                    "example-1": {
+                      "success": true,
+                      "comment": {
+                        "text": "some comment",
+                        "author": "62de52f140327b2c63fb15a9",
+                        "authorname": "rando",
+                        "postId": "62d684ccc66b1193baf90fe6",
+                        "likes": [],
+                        "likecount": 0,
+                        "parentId": null,
+                        "_id": "62df6d659e0a576e2404f5dc",
+                        "createdAt": "2022-07-26T04:28:21.607Z",
+                        "updatedAt": "2022-07-26T04:28:21.607Z",
+                        "__v": 0
+                      },
+                      "message": "Comment created successfully"
+                    }
+                  }
+                },
+                "examples": {
+                  "comment created": {
+                    "value": {
+                      "success": true,
+                      "comment": {
+                        "text": "some comment",
+                        "author": "62de52f140327b2c63fb15a9",
+                        "authorname": "rando",
+                        "postId": "62d684ccc66b1193baf90fe6",
+                        "likes": [],
+                        "likecount": 0,
+                        "parentId": null,
+                        "_id": "62df6d659e0a576e2404f5dc",
+                        "createdAt": "2022-07-26T04:28:21.607Z",
+                        "updatedAt": "2022-07-26T04:28:21.607Z",
+                        "__v": 0
+                      },
+                      "message": "Comment created successfully"
+                    }
+                  },
+                  "reply created": {
+                    "value": {
+                      "success": true,
+                      "comment": {
+                        "text": "some reply",
+                        "author": "62de52f140327b2c63fb15a9",
+                        "authorname": "rando",
+                        "postId": "62d684ccc66b1193baf90fe6",
+                        "likes": [],
+                        "likecount": 0,
+                        "parentId": "62df6d659e0a576e2404f5dc",
+                        "_id": "62df6e339e0a576e2404f5e3",
+                        "createdAt": "2022-07-26T04:31:47.645Z",
+                        "updatedAt": "2022-07-26T04:31:47.645Z",
+                        "__v": 0
+                      },
+                      "message": "Comment created successfully"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "x-examples": {
+                    "example-1": {
+                      "success": false,
+                      "message": "Invalid token"
+                    }
+                  }
+                },
+                "examples": {
+                  "Invalid Token - unauthenticated user ": {
+                    "value": {
+                      "success": false,
+                      "message": "Invalid token"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "x-examples": {
+                    "example-1": {
+                      "success": false,
+                      "message": "Invalid parent comment"
+                    }
+                  }
+                },
+                "examples": {
+                  "Invalid parent Id": {
+                    "value": {
+                      "success": false,
+                      "message": "Invalid parent comment"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "description": "Hit this end point to add a new comment to a specific post.The post id is to be provided and should be valid. The user must be logged in to add a comment, although backend will take care of that.Note : any logged in user can add comment.",
+        "tags": ["comment"],
+        "security": [
+          {
+            "apikey": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {}
+              },
+              "examples": {
+                "add comment #level 1": {
+                  "value": {
+                    "text": "some comment"
+                  }
+                },
+                "add reply #level 2": {
+                  "value": {
+                    "text": "some reply",
+                    "parentId": "62df6d659e0a576e2404f5dc"
+                  }
+                }
+              }
+            }
+          },
+          "description": "To add a comment the text field should contain the comment and in case of reply the parentId field should contain the _id of the comment to reply to. Note : only two level of nesting is available so far, so make sure you dont add replies to replies."
+        }
+      }
+    },
+    "/post/{postId}/comment/{commentId}": {
+      "parameters": [
+        {
+          "schema": {
+            "type": "string"
+          },
+          "name": "postId",
+          "in": "path",
+          "required": true
+        },
+        {
+          "schema": {
+            "type": "string"
+          },
+          "name": "commentId",
+          "in": "path",
+          "required": true
+        }
+      ],
+      "put": {
+        "summary": "Edit a comment.",
+        "operationId": "post-post-postId-comment-commentId",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                },
+                "examples": {
+                  "comment updated": {
+                    "value": {
+                      "success": true,
+                      "comment": {
+                        "_id": "62df6e339e0a576e2404f5e3",
+                        "text": "updated comment",
+                        "author": "62de52f140327b2c63fb15a9",
+                        "authorname": "rando",
+                        "postId": "62d684ccc66b1193baf90fe6",
+                        "likes": [],
+                        "likecount": 0,
+                        "parentId": "62df6d659e0a576e2404f5dc",
+                        "createdAt": "2022-07-26T04:31:47.645Z",
+                        "updatedAt": "2022-07-26T04:57:49.835Z",
+                        "__v": 0
+                      },
+                      "message": "Comment updated successfully"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                },
+                "examples": {
+                  "editing  others comment": {
+                    "value": {
+                      "success": false,
+                      "message": "Can not perform this task, Forbidden"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "x-examples": {
+                    "example-1": {
+                      "success": false,
+                      "message": "Post not found"
+                    }
+                  }
+                },
+                "examples": {
+                  "post not found": {
+                    "value": {
+                      "success": false,
+                      "message": "Post not found"
+                    }
+                  },
+                  "comment not found": {
+                    "value": {
+                      "success": false,
+                      "message": "Comment not found"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": ["comment"],
+        "description": "Hit this end point to edit a comment.The post id and the comment id are to be provided and should be valid. The user must be logged in to eidt a comment, although backend will take care of that.Note : only the author of a comment can edit his own comments not any comment.",
+        "security": [
+          {
+            "apikey": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "x-examples": {
+                  "example-1": {
+                    "text": "updated comment "
+                  }
+                },
+                "properties": {
+                  "text": {
+                    "type": "string"
+                  }
+                },
+                "required": ["text"]
+              },
+              "examples": {
+                "update comment": {
+                  "value": {
+                    "text": "updated comment "
+                  }
+                }
+              }
+            }
+          },
+          "description": "To edit a comment the text field should contain the new comment."
+        }
       },
       "delete": {
-        "summary": "Remove reaction",
-        "operationId": "delete-post-postId-reaction",
+        "summary": "Delete a comment",
+        "operationId": "delete-post-postId-comment-commentId",
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "tags": ["comment"],
+        "description": "Hit this end point to delete a comment.The post id and the comment id are to be provided and should be valid. The user must be logged in to delete a comment, although backend will take care of that.Note : only the author of a comment and the author of the post can delete the comment.",
+        "security": [
+          {
+            "apikey": []
+          }
+        ]
+      },
+      "get": {
+        "summary": "Get a specific comment with all its replies...",
+        "operationId": "get-post-postId-comment-commentId",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "comment": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "_id": {
+                            "type": "string"
+                          },
+                          "text": {
+                            "type": "string"
+                          },
+                          "author": {
+                            "type": "string"
+                          },
+                          "authorname": {
+                            "type": "string"
+                          },
+                          "postId": {
+                            "type": "string"
+                          },
+                          "likes": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "reactionType": {
+                                  "type": "string"
+                                },
+                                "authorId": {
+                                  "type": "string"
+                                },
+                                "authorname": {
+                                  "type": "string"
+                                },
+                                "_id": {
+                                  "type": "string"
+                                }
+                              }
+                            }
+                          },
+                          "likecount": {
+                            "type": "integer"
+                          },
+                          "parentId": {
+                            "type": "null"
+                          },
+                          "createdAt": {
+                            "type": "string"
+                          },
+                          "updatedAt": {
+                            "type": "string"
+                          },
+                          "__v": {
+                            "type": "integer"
+                          },
+                          "replies": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "_id": {
+                                  "type": "string"
+                                },
+                                "text": {
+                                  "type": "string"
+                                },
+                                "author": {
+                                  "type": "string"
+                                },
+                                "authorname": {
+                                  "type": "string"
+                                },
+                                "postId": {
+                                  "type": "string"
+                                },
+                                "likes": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "object",
+                                    "properties": {}
+                                  }
+                                },
+                                "likecount": {
+                                  "type": "integer"
+                                },
+                                "parentId": {
+                                  "type": "string"
+                                },
+                                "createdAt": {
+                                  "type": "string"
+                                },
+                                "updatedAt": {
+                                  "type": "string"
+                                },
+                                "__v": {
+                                  "type": "integer"
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "x-examples": {
+                    "example-1": {
+                      "success": true,
+                      "comment": [
+                        {
+                          "_id": "62d6871cd6e0d463861dded0",
+                          "text": "updated comment 1",
+                          "author": "62d683d17bc23f17bccb3162",
+                          "authorname": "aritra op",
+                          "postId": "62d684ccc66b1193baf90fe6",
+                          "likes": [
+                            {
+                              "reactionType": "haha",
+                              "authorId": "62d683d17bc23f17bccb3162",
+                              "authorname": "aritra op",
+                              "_id": "62d6889ed6e0d463861ddef9"
+                            },
+                            {
+                              "reactionType": "haha",
+                              "authorId": "62d64cd769cd6ed3b21da086",
+                              "authorname": "aritra",
+                              "_id": "62d688bdd6e0d463861ddf00"
+                            },
+                            {
+                              "reactionType": "care",
+                              "authorId": "62d64e7fca666d9ee74a10c5",
+                              "authorname": "demo3",
+                              "_id": "62d68910d6e0d463861ddf09"
+                            }
+                          ],
+                          "likecount": 3,
+                          "parentId": null,
+                          "createdAt": "2022-07-19T10:27:40.320Z",
+                          "updatedAt": "2022-07-19T10:37:15.050Z",
+                          "__v": 0,
+                          "replies": [
+                            {
+                              "_id": "62d6880ad6e0d463861ddee1",
+                              "text": "reply 1",
+                              "author": "62d683d17bc23f17bccb3162",
+                              "authorname": "aritra op",
+                              "postId": "62d684ccc66b1193baf90fe6",
+                              "likes": [],
+                              "likecount": 0,
+                              "parentId": "62d6871cd6e0d463861dded0",
+                              "createdAt": "2022-07-19T10:31:38.031Z",
+                              "updatedAt": "2022-07-19T10:31:38.031Z",
+                              "__v": 0
+                            },
+                            {
+                              "_id": "62d68810d6e0d463861ddee6",
+                              "text": "reply 2",
+                              "author": "62d683d17bc23f17bccb3162",
+                              "authorname": "aritra op",
+                              "postId": "62d684ccc66b1193baf90fe6",
+                              "likes": [],
+                              "likecount": 0,
+                              "parentId": "62d6871cd6e0d463861dded0",
+                              "createdAt": "2022-07-19T10:31:44.015Z",
+                              "updatedAt": "2022-07-19T10:31:44.015Z",
+                              "__v": 0
+                            },
+                            {
+                              "_id": "62d68814d6e0d463861ddeeb",
+                              "text": "reply 3",
+                              "author": "62d683d17bc23f17bccb3162",
+                              "authorname": "aritra op",
+                              "postId": "62d684ccc66b1193baf90fe6",
+                              "likes": [],
+                              "likecount": 0,
+                              "parentId": "62d6871cd6e0d463861dded0",
+                              "createdAt": "2022-07-19T10:31:48.438Z",
+                              "updatedAt": "2022-07-19T10:31:48.438Z",
+                              "__v": 0
+                            },
+                            {
+                              "_id": "62d68819d6e0d463861ddef0",
+                              "text": "reply 4",
+                              "author": "62d683d17bc23f17bccb3162",
+                              "authorname": "aritra op",
+                              "postId": "62d684ccc66b1193baf90fe6",
+                              "likes": [],
+                              "likecount": 0,
+                              "parentId": "62d6871cd6e0d463861dded0",
+                              "createdAt": "2022-07-19T10:31:53.172Z",
+                              "updatedAt": "2022-07-19T10:31:53.172Z",
+                              "__v": 0
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                },
+                "examples": {
+                  "get comment": {
+                    "value": {
+                      "success": true,
+                      "comment": [
+                        {
+                          "_id": "62d6871cd6e0d463861dded0",
+                          "text": "updated comment 1",
+                          "author": "62d683d17bc23f17bccb3162",
+                          "authorname": "aritra op",
+                          "postId": "62d684ccc66b1193baf90fe6",
+                          "likes": [
+                            {
+                              "reactionType": "haha",
+                              "authorId": "62d683d17bc23f17bccb3162",
+                              "authorname": "aritra op",
+                              "_id": "62d6889ed6e0d463861ddef9"
+                            },
+                            {
+                              "reactionType": "haha",
+                              "authorId": "62d64cd769cd6ed3b21da086",
+                              "authorname": "aritra",
+                              "_id": "62d688bdd6e0d463861ddf00"
+                            },
+                            {
+                              "reactionType": "care",
+                              "authorId": "62d64e7fca666d9ee74a10c5",
+                              "authorname": "demo3",
+                              "_id": "62d68910d6e0d463861ddf09"
+                            }
+                          ],
+                          "likecount": 3,
+                          "parentId": null,
+                          "createdAt": "2022-07-19T10:27:40.320Z",
+                          "updatedAt": "2022-07-19T10:37:15.050Z",
+                          "__v": 0,
+                          "replies": [
+                            {
+                              "_id": "62d6880ad6e0d463861ddee1",
+                              "text": "reply 1",
+                              "author": "62d683d17bc23f17bccb3162",
+                              "authorname": "aritra op",
+                              "postId": "62d684ccc66b1193baf90fe6",
+                              "likes": [],
+                              "likecount": 0,
+                              "parentId": "62d6871cd6e0d463861dded0",
+                              "createdAt": "2022-07-19T10:31:38.031Z",
+                              "updatedAt": "2022-07-19T10:31:38.031Z",
+                              "__v": 0
+                            },
+                            {
+                              "_id": "62d68810d6e0d463861ddee6",
+                              "text": "reply 2",
+                              "author": "62d683d17bc23f17bccb3162",
+                              "authorname": "aritra op",
+                              "postId": "62d684ccc66b1193baf90fe6",
+                              "likes": [],
+                              "likecount": 0,
+                              "parentId": "62d6871cd6e0d463861dded0",
+                              "createdAt": "2022-07-19T10:31:44.015Z",
+                              "updatedAt": "2022-07-19T10:31:44.015Z",
+                              "__v": 0
+                            },
+                            {
+                              "_id": "62d68814d6e0d463861ddeeb",
+                              "text": "reply 3",
+                              "author": "62d683d17bc23f17bccb3162",
+                              "authorname": "aritra op",
+                              "postId": "62d684ccc66b1193baf90fe6",
+                              "likes": [],
+                              "likecount": 0,
+                              "parentId": "62d6871cd6e0d463861dded0",
+                              "createdAt": "2022-07-19T10:31:48.438Z",
+                              "updatedAt": "2022-07-19T10:31:48.438Z",
+                              "__v": 0
+                            },
+                            {
+                              "_id": "62d68819d6e0d463861ddef0",
+                              "text": "reply 4",
+                              "author": "62d683d17bc23f17bccb3162",
+                              "authorname": "aritra op",
+                              "postId": "62d684ccc66b1193baf90fe6",
+                              "likes": [],
+                              "likecount": 0,
+                              "parentId": "62d6871cd6e0d463861dded0",
+                              "createdAt": "2022-07-19T10:31:53.172Z",
+                              "updatedAt": "2022-07-19T10:31:53.172Z",
+                              "__v": 0
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                },
+                "examples": {
+                  "post not found": {
+                    "value": {
+                      "success": false,
+                      "message": "Post not found"
+                    }
+                  },
+                  "comment not found": {
+                    "value": {
+                      "success": false,
+                      "message": "Comment not found"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": ["comment"],
+        "description": "Hit this end point to get a specific comment with all its replies.",
+        "security": [
+          {
+            "apikey": []
+          }
+        ]
+      }
+    },
+    "/post/{postId}/comment/{commentId}/reaction": {
+      "parameters": [
+        {
+          "schema": {
+            "type": "string"
+          },
+          "name": "postId",
+          "in": "path",
+          "required": true
+        },
+        {
+          "schema": {
+            "type": "string"
+          },
+          "name": "commentId",
+          "in": "path",
+          "required": true
+        }
+      ],
+      "post": {
+        "summary": "Add reaction to a comment.",
+        "operationId": "post-post-postId-comment-commentId-reaction",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                },
+                "examples": {
+                  "reaction added": {
+                    "value": {
+                      "sucess": true,
+                      "comment": {
+                        "_id": "62d6871cd6e0d463861dded0",
+                        "text": "updated comment 1",
+                        "author": "62d683d17bc23f17bccb3162",
+                        "authorname": "aritra op",
+                        "postId": "62d684ccc66b1193baf90fe6",
+                        "likes": [
+                          {
+                            "reactionType": "haha",
+                            "authorId": "62d683d17bc23f17bccb3162",
+                            "authorname": "aritra op",
+                            "_id": "62d6889ed6e0d463861ddef9"
+                          },
+                          {
+                            "reactionType": "haha",
+                            "authorId": "62d64cd769cd6ed3b21da086",
+                            "authorname": "aritra",
+                            "_id": "62d688bdd6e0d463861ddf00"
+                          },
+                          {
+                            "reactionType": "care",
+                            "authorId": "62d64e7fca666d9ee74a10c5",
+                            "authorname": "demo3",
+                            "_id": "62d68910d6e0d463861ddf09"
+                          },
+                          {
+                            "reactionType": "haha",
+                            "authorId": "62de52f140327b2c63fb15a9",
+                            "authorname": "rando",
+                            "_id": "62df82c3ae9ea6dbc3af045c"
+                          }
+                        ],
+                        "likecount": 4,
+                        "parentId": null,
+                        "createdAt": "2022-07-19T10:27:40.320Z",
+                        "updatedAt": "2022-07-26T05:59:31.516Z",
+                        "__v": 0
+                      },
+                      "message": "haha added "
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": ["comment"],
+        "description": "Hit this endpoint to add a reaction to the comment.This end point works same as the add reaction feature of post section.",
+        "security": [
+          {
+            "apikey": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {}
+              },
+              "examples": {
+                "add reaction": {
+                  "value": {
+                    "reactionType": "haha"
+                  }
+                }
+              }
+            }
+          },
+          "description": "valid reaction types are like,love,haha,care,lol. Default reaction love."
+        }
+      },
+      "patch": {
+        "summary": "update reaction to a comment.",
+        "operationId": "patch-post-postId-comment-commentId-reaction",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                },
+                "examples": {
+                  "reaction updated": {
+                    "value": {
+                      "sucess": true,
+                      "comment": {
+                        "_id": "62d6871cd6e0d463861dded0",
+                        "text": "updated comment 1",
+                        "author": "62d683d17bc23f17bccb3162",
+                        "authorname": "aritra op",
+                        "postId": "62d684ccc66b1193baf90fe6",
+                        "likes": [
+                          {
+                            "reactionType": "haha",
+                            "authorId": "62d683d17bc23f17bccb3162",
+                            "authorname": "aritra op",
+                            "_id": "62d6889ed6e0d463861ddef9"
+                          },
+                          {
+                            "reactionType": "haha",
+                            "authorId": "62d64cd769cd6ed3b21da086",
+                            "authorname": "aritra",
+                            "_id": "62d688bdd6e0d463861ddf00"
+                          },
+                          {
+                            "reactionType": "care",
+                            "authorId": "62d64e7fca666d9ee74a10c5",
+                            "authorname": "demo3",
+                            "_id": "62d68910d6e0d463861ddf09"
+                          },
+                          {
+                            "reactionType": "care",
+                            "authorId": "62de52f140327b2c63fb15a9",
+                            "authorname": "rando",
+                            "_id": "62df82c3ae9ea6dbc3af045c"
+                          }
+                        ],
+                        "likecount": 4,
+                        "parentId": null,
+                        "createdAt": "2022-07-19T10:27:40.320Z",
+                        "updatedAt": "2022-07-26T06:04:43.947Z",
+                        "__v": 0
+                      },
+                      "message": "care added "
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": ["comment"],
+        "description": "Hit this endpoint update a reaction to a comment. This endpoint works same as the update reaction feature on the post section.",
+        "security": [
+          {
+            "apikey": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {}
+              },
+              "examples": {
+                "update reaction": {
+                  "value": {
+                    "reactionType": "care"
+                  }
+                }
+              }
+            }
+          },
+          "description": "valid reaction types are like,love,haha,care,lol. Default reaction love."
+        }
+      },
+      "delete": {
+        "summary": "Remove a reaction from a comment",
+        "operationId": "delete-post-postId-comment-commentId-reaction",
         "responses": {
           "200": {
             "description": "OK",
@@ -3167,29 +4399,36 @@
                   "reaction removed": {
                     "value": {
                       "success": true,
-                      "post": {
-                        "_id": "62d68493c66b1193baf90e00",
-                        "title": "test post 2",
-                        "description": "skdjfhsdhfkjsdhfksdhfsdhfiusdhfiusdhfihsdifuhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh",
+                      "comment": {
+                        "_id": "62d6871cd6e0d463861dded0",
+                        "text": "updated comment 1",
                         "author": "62d683d17bc23f17bccb3162",
                         "authorname": "aritra op",
-                        "media": [
+                        "postId": "62d684ccc66b1193baf90fe6",
+                        "likes": [
                           {
-                            "mediaRef": "62d68493c66b1193baf90dfb",
-                            "mediaUrl": "http://localhost:1020/post/62d68493c66b1193baf90dfb/media",
-                            "_id": "62d68493c66b1193baf90e01"
+                            "reactionType": "haha",
+                            "authorId": "62d683d17bc23f17bccb3162",
+                            "authorname": "aritra op",
+                            "_id": "62d6889ed6e0d463861ddef9"
                           },
                           {
-                            "mediaRef": "62d68493c66b1193baf90dfc",
-                            "mediaUrl": "http://localhost:1020/post/62d68493c66b1193baf90dfc/media",
-                            "_id": "62d68493c66b1193baf90e02"
+                            "reactionType": "haha",
+                            "authorId": "62d64cd769cd6ed3b21da086",
+                            "authorname": "aritra",
+                            "_id": "62d688bdd6e0d463861ddf00"
+                          },
+                          {
+                            "reactionType": "care",
+                            "authorId": "62d64e7fca666d9ee74a10c5",
+                            "authorname": "demo3",
+                            "_id": "62d68910d6e0d463861ddf09"
                           }
                         ],
-                        "likes": [],
-                        "likecount": 0,
-                        "tags": ["love", "wisdom"],
-                        "createdAt": "2022-07-19T10:16:51.951Z",
-                        "updatedAt": "2022-07-25T11:21:56.567Z",
+                        "likecount": 3,
+                        "parentId": null,
+                        "createdAt": "2022-07-19T10:27:40.320Z",
+                        "updatedAt": "2022-07-26T06:07:40.800Z",
                         "__v": 0
                       },
                       "message": "reaction removed"
@@ -3200,8 +4439,8 @@
             }
           }
         },
-        "description": "remove reaction",
-        "tags": ["post"],
+        "tags": ["comment"],
+        "description": "Hit this endpoint to remove a reaction from a comment. This endpoint works same as the remove reaction feature on the post section.",
         "security": [
           {
             "apikey": []

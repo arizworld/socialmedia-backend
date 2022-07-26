@@ -59,7 +59,7 @@ class CommentController {
                 const data = yield comments_model_1.default.aggregate(pipeline);
                 res.json({
                     success: true,
-                    data,
+                    data: data[0],
                 });
             });
         });
@@ -365,7 +365,7 @@ class CommentController {
                 res.json({
                     success: true,
                     comment,
-                    message: `${reactionType} ${res.__("REACTION_REMOVED")}`,
+                    message: `reaction ${res.__("REACTION_REMOVED")}`,
                 });
             });
         });
