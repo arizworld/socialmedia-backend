@@ -138,7 +138,7 @@ export default class UserController {
       user.destroyResetToken(config.resetDelay);
       const resetUrl = `${req.protocol}://${req.get(
         "host"
-      )}/user/resetpassword/${resetToken}`;
+      )}/api/v1/user/resetpassword/${resetToken}`;
       const subject = "Password Reset";
       const message = `your password reset link for ${req.get(
         "host"

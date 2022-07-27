@@ -79,6 +79,6 @@ userSchema.methods.destroyResetToken = async function (resetDelay: number) {
 userSchema.methods.comparePassword = async function (password: string) {
   return bcrypt.compare(password, this.password);
 };
-const User = mongoose.model<UserModel>("User", userSchema);
+export const User = mongoose.model<UserModel>("User", userSchema);
 const UserServices = new MongooseService<UserModel, UserStructure>(User);
 export default UserServices;

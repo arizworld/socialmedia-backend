@@ -1,5 +1,6 @@
 import App from "./App";
 import config from "./config/config";
+import DB from "./config/db";
 import { logger, LogType } from "./utils/logger";
 import sendEMail from "./utils/mailer";
 // uncaught error
@@ -32,7 +33,7 @@ process.on("uncaughtException", async (err: Error) => {
   process.exit(1);
 });
 
-const app = new App();
+export const app = new App(DB);
 const server = app.listen(1020);
 // unhandled promise rejection
 

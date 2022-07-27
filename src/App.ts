@@ -21,7 +21,7 @@ import { serve, setup } from "swagger-ui-express";
 
 export default class App {
   private app: express.Application;
-  constructor() {
+  constructor(public database?: typeof DB) {
     this.app = express();
     this.initialzeDatabase();
     this.initializeMiddlewares();
@@ -40,7 +40,9 @@ export default class App {
     });
   }
   private initialzeDatabase() {
-    new DB();
+    if (this.database) {
+      new this.database();
+    }
   }
   private initializeMiddlewares() {
     this.app.use(express.json());
@@ -50,6 +52,9 @@ export default class App {
   }
   private initializeErrorHandler() {
     this.app.use(showError());
+  }
+  public getInstance() {
+    return this.app;
   }
   public listen(port: number) {
     const server = this.app.listen(port, () => {
