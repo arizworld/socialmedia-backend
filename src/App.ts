@@ -2,6 +2,8 @@ import express from "express";
 // import router utility
 import AppRouter from "./utils/Router/AppRouter";
 import RouterBundler from "./utils/Router/RouterBudler";
+import swaggerDocument from "./swagger.json";
+import { serve, setup } from "swagger-ui-express";
 // import middlewares
 import cookieParser from "cookie-parser";
 import i18n from "./middleware/internationalization.middleware";
@@ -16,8 +18,7 @@ import defaultRoute from "./routes/defaultRoute";
 import userRoute from "./routes/user.router";
 import postRoute from "./routes/post.router";
 import commentRoute from "./routes/comment.router";
-import swaggerDocument from "./swagger.json";
-import { serve, setup } from "swagger-ui-express";
+import filesRoute from "./routes/files.router";
 
 export default class App {
   private app: express.Application;
@@ -25,11 +26,22 @@ export default class App {
     this.app = express();
     this.initialzeDatabase();
     this.initializeMiddlewares();
-    this.app.use("/api/v1/documentaion", serve, setup(swaggerDocument));
-    this.initializeRoutes([defaultRoute, userRoute, postRoute, commentRoute]);
+    this.app.use("/api/v1/documentation", serve, setup(swaggerDocument));
+    this.initializePublicRoutes([defaultRoute, filesRoute]);
+    this.initializePrivateRoutes([userRoute, postRoute, commentRoute]);
     this.initializeErrorHandler();
   }
-  private initializeRoutes(routeHandlers: RouterBundler[][]) {
+  private initializePublicRoutes(routeHandlers: RouterBundler[][]) {
+    routeHandlers.forEach((routes) => {
+      const router = AppRouter.getInstance();
+      routes.forEach((route) => {
+        const { path, middlewares, controller, method } = route;
+        router[method](path, middlewares || [], controller);
+      });
+      this.app.use("/api/v1", router);
+    });
+  }
+  private initializePrivateRoutes(routeHandlers: RouterBundler[][]) {
     routeHandlers.forEach((routes) => {
       const router = AppRouter.getInstance();
       routes.forEach((route) => {
@@ -41,7 +53,7 @@ export default class App {
   }
   private initialzeDatabase() {
     if (this.database) {
-      new this.database();
+      this.database.connect();
     }
   }
   private initializeMiddlewares() {

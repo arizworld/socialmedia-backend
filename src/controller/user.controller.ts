@@ -25,22 +25,21 @@ export default class UserController {
     if (user) {
       return next(new ErrorHandler(400, "USER_EXISTS"));
     }
+    const blockedAccessTokens = [];
     const newUser: UserModel = await UserServices.create({
       username,
       email,
       password,
-    });
-    const token = newUser.getToken();
-    res.cookie("token", token, {
-      maxAge: 1 * 24 * 60 * 60 * 1000,
-      httpOnly: true,
+      blockedAccessTokens,
     });
     if (newUser.image) {
       newUser.image.data = undefined;
     }
-    res
-      .status(201)
-      .json({ success: true, user: newUser, message: res.__("USER_CREATED") });
+    res.status(201).json({
+      success: true,
+      user: newUser,
+      message: res.__("USER_CREATED"),
+    });
   });
 
   login = catchAsyncErrors(async function (
@@ -58,16 +57,13 @@ export default class UserController {
       return next(new ErrorHandler(400, "INVALID_CREDENTIALS"));
     }
     const token = user.getToken();
-    res.cookie("token", token, {
-      maxAge: 1 * 24 * 60 * 60 * 1000,
-      httpOnly: true,
-    });
     if (user.image) {
       user.image.data = undefined;
     }
     res.status(200).json({
       success: true,
       user,
+      token,
       message: `${res.__("USER_LOGIN")} ${user.username}`,
     });
   });
@@ -78,14 +74,16 @@ export default class UserController {
     res: Response,
     next: NextFunction
   ) {
-    const { token } = req.cookies;
-    if (!token) {
-      return next(new ErrorHandler(401, "UNAUTHORISED"));
+    const token = req.headers.authorization?.split(" ")[1];
+    const userId = req.body.userID;
+    const user = await UserServices.findByIdAndSelect(userId);
+    if (!user) {
+      return next(new ErrorHandler(404, "USER_NOT_FOUND"));
     }
-    res.cookie("token", "", {
-      maxAge: 1,
-      httpOnly: true,
-    });
+    if (token) {
+      user.blockedAccessTokens.push({ token });
+    }
+    await user.save();
     res
       .status(200)
       .json({ success: true, message: `${res.__("USER_LOGOUT")}` });
@@ -264,7 +262,7 @@ export default class UserController {
     if (!user) {
       return next(new ErrorHandler(400, "USER_NOT_FOUND"));
     }
-    if (!user.image) {
+    if (!user.image || !user.image.data) {
       return next(new ErrorHandler(400, "PROFILE_PIC_NOT_FOUND"));
     }
     res.setHeader("Content-Type", "image/png");

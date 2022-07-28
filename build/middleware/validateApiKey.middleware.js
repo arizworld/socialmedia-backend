@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const config_1 = __importDefault(require("../config/config"));
 const ErrorHandler_1 = __importDefault(require("../utils/error/ErrorHandler"));
 function default_1(req, res, next) {
-    const { apikey } = req.query;
+    const { apikey } = req.headers;
     if (apikey !== config_1.default.apiKey) {
         return next(new ErrorHandler_1.default(403, "INAVLID_API_KEY"));
     }

@@ -4,7 +4,7 @@ import RouterBundler from "../utils/Router/RouterBudler";
 import { upload } from "../middleware/upload.middleware";
 import { HTTPMethods } from "../utils/Router/RouterBudler";
 import bodyValidator from "../middleware/bodyValidator.middleware";
-const user = new UserController();
+export const user = new UserController();
 
 export default [
   new RouterBundler("/user/all", HTTPMethods.get, user.getAllUsers),
@@ -17,7 +17,6 @@ export default [
     upload.single("avatar"),
     auth,
   ]),
-  new RouterBundler("/user/:id/avatar", HTTPMethods.get, user.showProfilePic),
   new RouterBundler("/user/avatar", HTTPMethods.del, user.removeProfilePic, [
     auth,
   ]),

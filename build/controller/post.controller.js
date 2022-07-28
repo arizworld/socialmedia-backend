@@ -32,7 +32,7 @@ class PostController {
                     files.forEach((file) => {
                         media.push({
                             mediaRef: file.id,
-                            mediaUrl: `${req.protocol}://${req.get("host")}/post/${file.id.toString()}/media`,
+                            mediaUrl: `${req.protocol}://${req.get("host")}/api/v1/post/${file.id.toString()}/media`,
                         });
                     });
                 }
@@ -68,7 +68,7 @@ class PostController {
                     files.forEach((file) => {
                         media.push({
                             mediaRef: file.id,
-                            mediaUrl: `${req.protocol}://${req.get("host")}/post/${file.id.toString()}/media`,
+                            mediaUrl: `${req.protocol}://${req.get("host")}/api/v1/post/${file.id.toString()}/media`,
                         });
                     });
                 }

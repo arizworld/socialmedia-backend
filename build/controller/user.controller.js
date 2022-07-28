@@ -39,17 +39,14 @@ class UserController {
                     email,
                     password,
                 });
-                const token = newUser.getToken();
-                res.cookie("token", token, {
-                    maxAge: 1 * 24 * 60 * 60 * 1000,
-                    httpOnly: true,
-                });
                 if (newUser.image) {
                     newUser.image.data = undefined;
                 }
-                res
-                    .status(201)
-                    .json({ success: true, user: newUser, message: res.__("USER_CREATED") });
+                res.status(201).json({
+                    success: true,
+                    user: newUser,
+                    message: res.__("USER_CREATED"),
+                });
             });
         });
         this.login = (0, catchAsyncErrors_1.default)(function (req, res, next) {
@@ -64,16 +61,13 @@ class UserController {
                     return next(new ErrorHandler_1.default(400, "INVALID_CREDENTIALS"));
                 }
                 const token = user.getToken();
-                res.cookie("token", token, {
-                    maxAge: 1 * 24 * 60 * 60 * 1000,
-                    httpOnly: true,
-                });
                 if (user.image) {
                     user.image.data = undefined;
                 }
                 res.status(200).json({
                     success: true,
                     user,
+                    token,
                     message: `${res.__("USER_LOGIN")} ${user.username}`,
                 });
             });
@@ -81,14 +75,6 @@ class UserController {
         //   authentication required
         this.logout = (0, catchAsyncErrors_1.default)(function (req, res, next) {
             return __awaiter(this, void 0, void 0, function* () {
-                const { token } = req.cookies;
-                if (!token) {
-                    return next(new ErrorHandler_1.default(401, "UNAUTHORISED"));
-                }
-                res.cookie("token", "", {
-                    maxAge: 1,
-                    httpOnly: true,
-                });
                 res
                     .status(200)
                     .json({ success: true, message: `${res.__("USER_LOGOUT")}` });
@@ -134,7 +120,7 @@ class UserController {
                 try {
                     const resetToken = yield user.getResetToken(config_1.default.resetDelay);
                     user.destroyResetToken(config_1.default.resetDelay);
-                    const resetUrl = `${req.protocol}://${req.get("host")}/user/resetpassword/${resetToken}`;
+                    const resetUrl = `${req.protocol}://${req.get("host")}/api/v1/user/resetpassword/${resetToken}`;
                     const subject = "Password Reset";
                     const message = `your password reset link for ${req.get("host")} \n\n is :- ${resetUrl} \n\n\ if you have not request this,please ignore`;
                     const isSent = yield (0, mailer_1.default)({ email, subject, message });
@@ -203,7 +189,7 @@ class UserController {
                         .toBuffer();
                     user.image = {
                         data: imageData,
-                        url: `${req.protocol}://${req.get("host")}/user/${userId}/avatar`,
+                        url: `${req.protocol}://${req.get("host")}/api/v1/user/${userId}/avatar`,
                     };
                     yield user.save();
                     res.status(200).json({

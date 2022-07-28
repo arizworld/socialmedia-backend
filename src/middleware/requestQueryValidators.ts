@@ -1,11 +1,8 @@
 import { Request, Response, NextFunction } from "express";
-import ErrorHandler from "../utils/error/ErrorHandler";
 
 export default function (req: Request, res: Response, next: NextFunction) {
   const validQueries =
-    req.method === "GET"
-      ? ["apikey", "lt", "page", "srt", "tags", "keyword"]
-      : ["apikey"];
+    req.method === "GET" ? ["lt", "page", "srt", "tags", "keyword"] : [];
   const { query } = req;
   const queryCopy = { ...query };
   if (queryCopy.srt && !(queryCopy.srt === "ml" || queryCopy.srt === "mr")) {

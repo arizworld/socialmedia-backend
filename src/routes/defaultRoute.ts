@@ -5,4 +5,11 @@ export default [
   new RouterBundler("/", HTTPMethods.get, (req: Request, res: Response) => {
     res.send(res.__("hello"));
   }),
+  new RouterBundler(
+    "/hello",
+    HTTPMethods.get,
+    (req: Request, res: Response) => {
+      res.send("jello");
+    }
+  ),
 ];

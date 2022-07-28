@@ -648,6 +648,9 @@
         "security": [
           {
             "apikey": []
+          },
+          {
+            "Authorization": []
           }
         ],
         "parameters": [],
@@ -745,7 +748,7 @@
             }
           }
         },
-        "description": "This validates user token and grant access to certain post and comments related operations.",
+        "description": "This validates user token and grant access to certain post and comments related operations. store the token from the response it will be the Bearer token.",
         "requestBody": {
           "content": {
             "application/json": {
@@ -838,10 +841,13 @@
             }
           }
         },
-        "description": "This end point destorys the user token.",
+        "description": "This endpoint black lists the user's authorization token",
         "security": [
           {
             "apikey": []
+          },
+          {
+            "Authorization": []
           }
         ],
         "tags": ["user"],
@@ -920,6 +926,9 @@
         "security": [
           {
             "apikey": []
+          },
+          {
+            "Authorization": []
           }
         ],
         "requestBody": {
@@ -1002,6 +1011,9 @@
         "security": [
           {
             "apikey": []
+          },
+          {
+            "Authorization": []
           }
         ]
       }
@@ -1054,12 +1066,7 @@
           }
         },
         "operationId": "get-user-userId-avatar",
-        "description": "Hit this endpoint to show user's profile pic",
-        "security": [
-          {
-            "apikey": []
-          }
-        ]
+        "description": "Hit this endpoint to show user's profile pic."
       }
     },
     "/user/forgetpassword": {
@@ -2033,6 +2040,9 @@
         "security": [
           {
             "apikey": []
+          },
+          {
+            "Authorization": []
           }
         ],
         "requestBody": {
@@ -2233,6 +2243,9 @@
         "security": [
           {
             "apikey": []
+          },
+          {
+            "Authorization": []
           }
         ],
         "tags": ["post"]
@@ -2430,6 +2443,9 @@
         "security": [
           {
             "apikey": []
+          },
+          {
+            "Authorization": []
           }
         ],
         "requestBody": {
@@ -2520,12 +2536,7 @@
           }
         },
         "operationId": "get-post-mediaRef-media",
-        "security": [
-          {
-            "apikey": []
-          }
-        ],
-        "description": "Hit this endpoint to stream files from post media referances. In case you want to stream from the media link just include the api key at the end."
+        "description": "Hit this endpoint to stream files from post media referances. In case you want to stream from the media link just include the link in your player with the content type from response header."
       }
     },
     "/user/{userId}/posts": {
@@ -3045,6 +3056,9 @@
         "security": [
           {
             "apikey": []
+          },
+          {
+            "Authorization": []
           }
         ],
         "requestBody": {
@@ -3130,6 +3144,9 @@
         "security": [
           {
             "apikey": []
+          },
+          {
+            "Authorization": []
           }
         ]
       },
@@ -3282,6 +3299,9 @@
         "security": [
           {
             "apikey": []
+          },
+          {
+            "Authorization": []
           }
         ],
         "requestBody": {
@@ -3747,6 +3767,9 @@
         "security": [
           {
             "apikey": []
+          },
+          {
+            "Authorization": []
           }
         ],
         "requestBody": {
@@ -3893,6 +3916,9 @@
         "security": [
           {
             "apikey": []
+          },
+          {
+            "Authorization": []
           }
         ],
         "requestBody": {
@@ -3943,6 +3969,9 @@
         "security": [
           {
             "apikey": []
+          },
+          {
+            "Authorization": []
           }
         ]
       },
@@ -4377,6 +4406,9 @@
         "security": [
           {
             "apikey": []
+          },
+          {
+            "Authorization": []
           }
         ],
         "requestBody": {
@@ -4465,6 +4497,9 @@
         "security": [
           {
             "apikey": []
+          },
+          {
+            "Authorization": []
           }
         ],
         "requestBody": {
@@ -4547,6 +4582,9 @@
         "security": [
           {
             "apikey": []
+          },
+          {
+            "Authorization": []
           }
         ]
       }
@@ -4557,8 +4595,13 @@
     "securitySchemes": {
       "apikey": {
         "type": "apiKey",
-        "in": "query",
+        "in": "header",
         "name": "apikey"
+      },
+      "Authorization": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "This is for user authentication. after login you will get a token and that will be Authorization header with  Bearer token value."
       }
     }
   },
@@ -4567,6 +4610,9 @@
   "security": [
     {
       "apikey": []
+    },
+    {
+      "Authorization": []
     }
   ]
 }

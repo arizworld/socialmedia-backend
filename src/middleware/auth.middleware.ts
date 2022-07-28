@@ -11,14 +11,22 @@ export default catchAsyncErrors(async function (
   res: Response,
   next: NextFunction
 ) {
-  const { token } = req.cookies;
-  if (!token) {
+  const { authorization } = req.headers;
+  if (!authorization) {
     return next(new ErrorHandler(400, "INVALID_TOKEN"));
   }
+  const token = authorization.split(" ")[1];
   const data = jwt.verify(token, config.secretKey);
   if (typeof data === "object") {
-    const user: UserModel | null = await UserServices.findById(data.id);
+    const user: UserModel | null = await UserServices.findByIdAndSelect(
+      data.id
+    );
     if (user) {
+      let tokenExists = user.blockedAccessTokens.filter(
+        (tokenObj) => tokenObj.token === token
+      );
+      if (tokenExists.length)
+        return next(new ErrorHandler(401, "UNAUTHORISED"));
       req.body.userID = user._id;
       req.body.username = user.username;
       return next();

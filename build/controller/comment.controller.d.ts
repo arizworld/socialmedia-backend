@@ -1,3 +1,4 @@
+/// <reference types="qs" />
 import { Request, Response, NextFunction } from "express";
 export default class CommentController {
     getAllComments: (req: Request<import("express-serve-static-core").ParamsDictionary, any, any, import("qs").ParsedQs, Record<string, any>>, res: Response<any, Record<string, any>>, next: NextFunction) => void;

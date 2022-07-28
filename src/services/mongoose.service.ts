@@ -85,7 +85,9 @@ export default class MongooseService<T, Tstructure> {
   findById(id: string) {
     return this.model.findById(id).exec();
   }
-
+  findByIdAndSelect(id: string) {
+    return this.model.findById(id).select("+blockedAccessTokens").exec();
+  }
   /**
    * @description Update a document matching the provided ID, with the body
    * @param id {string} ID for the document to update

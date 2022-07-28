@@ -13,25 +13,23 @@ const requestQueryValidators_1 = __importDefault(require("./middleware/requestQu
 const validateApiKey_middleware_1 = __importDefault(require("./middleware/validateApiKey.middleware"));
 const error_middleware_1 = require("./middleware/error.middleware");
 const logger_1 = require("./utils/logger");
-// import database
-const db_1 = __importDefault(require("./config/db"));
 // import routes
 const defaultRoute_1 = __importDefault(require("./routes/defaultRoute"));
 const user_router_1 = __importDefault(require("./routes/user.router"));
 const post_router_1 = __importDefault(require("./routes/post.router"));
 const comment_router_1 = __importDefault(require("./routes/comment.router"));
-const swagger_json_1 = __importDefault(require("./swagger.json"));
-const swagger_ui_express_1 = require("swagger-ui-express");
 class App {
-    constructor() {
+    constructor(database) {
+        this.database = database;
         this.app = (0, express_1.default)();
         this.initialzeDatabase();
         this.initializeMiddlewares();
-        this.app.use("/api/v1/documentaion", swagger_ui_express_1.serve, (0, swagger_ui_express_1.setup)(swagger_json_1.default));
-        this.initializeRoutes([defaultRoute_1.default, user_router_1.default, post_router_1.default, comment_router_1.default]);
+        // this.app.use("/api/v1/documentaion", serve, setup(swaggerDocument));
+        this.initializePublicRoutes([defaultRoute_1.default]);
+        this.initializePrivateRoutes([user_router_1.default, post_router_1.default, comment_router_1.default]);
         this.initializeErrorHandler();
     }
-    initializeRoutes(routeHandlers) {
+    initializePrivateRoutes(routeHandlers) {
         routeHandlers.forEach((routes) => {
             const router = AppRouter_1.default.getInstance();
             routes.forEach((route) => {
@@ -41,8 +39,20 @@ class App {
             this.app.use("/api/v1", validateApiKey_middleware_1.default, requestQueryValidators_1.default, router);
         });
     }
+    initializePublicRoutes(routeHandlers) {
+        routeHandlers.forEach((routes) => {
+            const router = AppRouter_1.default.getInstance();
+            routes.forEach((route) => {
+                const { path, middlewares, controller, method } = route;
+                router[method](path, middlewares || [], controller);
+            });
+            this.app.use("/api/v1", router);
+        });
+    }
     initialzeDatabase() {
-        new db_1.default();
+        if (this.database) {
+            new this.database();
+        }
     }
     initializeMiddlewares() {
         this.app.use(express_1.default.json());
@@ -52,6 +62,9 @@ class App {
     }
     initializeErrorHandler() {
         this.app.use((0, error_middleware_1.showError)());
+    }
+    getInstance() {
+        return this.app;
     }
     listen(port) {
         const server = this.app.listen(port, () => {

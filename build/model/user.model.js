@@ -12,6 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.User = void 0;
 const mongoose_1 = __importDefault(require("mongoose"));
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
@@ -88,7 +89,7 @@ userSchema.methods.comparePassword = function (password) {
         return bcrypt_1.default.compare(password, this.password);
     });
 };
-const User = mongoose_1.default.model("User", userSchema);
-const UserServices = new mongoose_service_1.default(User);
+exports.User = mongoose_1.default.model("User", userSchema);
+const UserServices = new mongoose_service_1.default(exports.User);
 exports.default = UserServices;
 //# sourceMappingURL=user.model.js.map

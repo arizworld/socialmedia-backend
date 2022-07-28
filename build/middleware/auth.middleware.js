@@ -19,10 +19,11 @@ const ErrorHandler_1 = __importDefault(require("../utils/error/ErrorHandler"));
 const config_1 = __importDefault(require("../config/config"));
 exports.default = (0, catchAsyncErrors_1.default)(function (req, res, next) {
     return __awaiter(this, void 0, void 0, function* () {
-        const { token } = req.cookies;
-        if (!token) {
+        const { authorization } = req.headers;
+        if (!authorization) {
             return next(new ErrorHandler_1.default(400, "INVALID_TOKEN"));
         }
+        const token = authorization.split(" ")[1];
         const data = jsonwebtoken_1.default.verify(token, config_1.default.secretKey);
         if (typeof data === "object") {
             const user = yield user_model_1.default.findById(data.id);

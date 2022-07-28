@@ -9,6 +9,7 @@ export interface UserStructure {
   email: string;
   password: string;
   image?: { data: Buffer | undefined; url: string };
+  blockedAccessTokens: { token: string }[];
   resetToken?: string;
   resetTokenExpire?: number;
 }
@@ -40,6 +41,18 @@ const userSchema: mongoose.Schema = new mongoose.Schema<UserModel>({
     url: {
       type: String,
     },
+  },
+  blockedAccessTokens: {
+    type: [
+      {
+        token: {
+          type: String,
+        },
+        _id: false,
+      },
+    ],
+    default: [],
+    select: false,
   },
   resetToken: String,
   resetTokenExpire: Number,

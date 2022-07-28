@@ -18,5 +18,6 @@ export interface UserModel extends UserStructure, mongoose.Document {
     getResetToken: (resetDelay: number) => Promise<string>;
     destroyResetToken: (resetDelay: number) => void;
 }
+export declare const User: mongoose.Model<UserModel, {}, {}, {}, any>;
 declare const UserServices: MongooseService<UserModel, UserStructure>;
 export default UserServices;

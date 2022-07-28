@@ -3,7 +3,6 @@ import request from "supertest";
 import bcrypt from "bcrypt";
 import App from "../../App";
 import UserServices from "../../model/user.model";
-import jwt from "jsonwebtoken";
 import PostServices from "../../model/post.model";
 import CommentServices from "../../model/comments.model";
 const validUserInput = {
@@ -30,12 +29,14 @@ const createUserResponse = {
   password: "$2b$10$oBz31PzJi/by0gdaGBYNvuayQF91dFpcR5JpQg9rtKrPKV3j6wtea",
   _id: "62e0cbd665b54e6a480db0ed",
   __v: 0,
+  blockedAccessTokens: [],
   getToken: () => "jlskjflskythlhlkhs",
   comparePassword: async (password) =>
     await bcrypt.compare(
       password,
       "$2b$10$oBz31PzJi/by0gdaGBYNvuayQF91dFpcR5JpQg9rtKrPKV3j6wtea"
     ),
+  save: async () => Promise.resolve("1"),
 };
 const deletePostResults = [
   {
@@ -87,12 +88,20 @@ const deletePostResults = [
     __v: 0,
   },
 ];
+const apikey = {
+  apikey: "4fcc807ead48669c976b",
+};
+const authorization = {
+  Authorization:
+    "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYyZTEyYWY3MWM0NzhhZTNmYmM5MjBiMSIsImlhdCI6MTY1ODk4NDMzMn0.L1DOUKJmxSPr-0-NRUtofK1_6746Zg8U5ZaRSyeKPTs",
+};
 const serverResponse = {
   success: true,
   user: {
     username: "rando",
     email: "randomuser3@gmail.com",
     password: "$2b$10$oBz31PzJi/by0gdaGBYNvuayQF91dFpcR5JpQg9rtKrPKV3j6wtea",
+    blockedAccessTokens: [],
     _id: "62e0cbd665b54e6a480db0ed",
     __v: 0,
   },
@@ -119,9 +128,10 @@ describe("user", () => {
           .mockResolvedValueOnce(null);
         const UserCreateMock = jest
           .spyOn(UserServices, "create") //  @ts-ignore
-          .mockResolvedValueOnce(createUserResponse);
+          .mockResolvedValueOnce({ ...createUserResponse });
         const response = await request(app)
-          .post("/api/v1/user?apikey=4fcc807ead48669c976b")
+          .post("/api/v1/user")
+          .set(apikey)
           .send(validUserInput);
         expect(response.status).toBe(201);
         expect(response.body).toEqual(serverResponse);
@@ -134,9 +144,10 @@ describe("user", () => {
           .mockResolvedValueOnce(null);
         const UserCreateMock = jest
           .spyOn(UserServices, "create") //  @ts-ignore
-          .mockResolvedValueOnce(createUserResponse);
+          .mockResolvedValueOnce({ ...createUserResponse });
         const response = await request(app)
-          .post("/api/v1/user?apikey=4fcc807ead48669c976b")
+          .post("/api/v1/user")
+          .set(apikey)
           .send(InvalidUserInput);
         expect(response.status).toBe(400);
         expect(response.body.success).toBe(false);
@@ -147,12 +158,13 @@ describe("user", () => {
       it("should return error email already exists", async () => {
         const UserFindMock = jest
           .spyOn(UserServices, "findOne") // @ts-ignore
-          .mockResolvedValueOnce(createUserResponse);
+          .mockResolvedValueOnce({ ...createUserResponse });
         const UserCreateMock = jest
           .spyOn(UserServices, "create") //  @ts-ignore
-          .mockResolvedValueOnce(createUserResponse);
+          .mockResolvedValueOnce({ ...createUserResponse });
         const response = await request(app)
-          .post("/api/v1/user?apikey=4fcc807ead48669c976b")
+          .post("/api/v1/user")
+          .set(apikey)
           .send(validUserInput);
         expect(response.status).toBe(400);
         expect(response.body.success).toBe(false);
@@ -165,9 +177,10 @@ describe("user", () => {
       it("should login user", async () => {
         const UserFindMock = jest
           .spyOn(UserServices, "findOne") // @ts-ignore
-          .mockResolvedValueOnce(createUserResponse);
+          .mockResolvedValueOnce({ ...createUserResponse });
         const response = await request(app)
-          .post("/api/v1/user/login?apikey=4fcc807ead48669c976b")
+          .post("/api/v1/user/login")
+          .set(apikey)
           .send(validLoginInput);
         expect(response.status).toBe(200);
         expect(response.body.success).toBe(true);
@@ -177,50 +190,13 @@ describe("user", () => {
       it("should not log in user", async () => {
         const UserFindMock = jest
           .spyOn(UserServices, "findOne") // @ts-ignore
-          .mockResolvedValueOnce(createUserResponse);
+          .mockResolvedValueOnce({ ...createUserResponse });
         const response = await request(app)
-          .post("/api/v1/user/login?apikey=4fcc807ead48669c976b")
+          .post("/api/v1/user/login")
+          .set(apikey)
           .send(invalidLoginInput);
         expect(response.status).toBe(400);
         expect(response.body.success).toBe(false);
-      });
-    });
-  });
-  describe("logout", () => {
-    describe(" given valid token ", () => {
-      it("should be able to logout", async () => {
-        const userFindByIdMock = jest
-          .spyOn(UserServices, "findById") // @ts-ignore
-          .mockResolvedValueOnce(createUserResponse);
-        const response = await request(app)
-          .post("/api/v1/user/logout?apikey=4fcc807ead48669c976b")
-          .set(
-            "Cookie",
-            "token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYyZGU1MmYxNDAzMjdiMmM2M2ZiMTVhOSIsImlhdCI6MTY1ODg5ODA1Mn0.plN9TzT7UMrQZA7vu9h_1ihZsIV7j_cym5vKgVRjGqE"
-          );
-        expect(response.status).toBe(200);
-        expect(response.body).toEqual({
-          success: true,
-          message: "See you soon...",
-        });
-      });
-    });
-    describe(" given invalid token ", () => {
-      it("should not be able to logout", async () => {
-        const userFindByIdMock = jest
-          .spyOn(UserServices, "findById") // @ts-ignore
-          .mockResolvedValueOnce(null);
-        const response = await request(app)
-          .post("/api/v1/user/logout?apikey=4fcc807ead48669c976b")
-          .set(
-            "Cookie",
-            "token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYyZGU1MmYxNDAzMjdiMmM2M2ZiMTVhOSIsImlhdCI6MTY1ODg5ODA1Mn0.plN9TzT7UMrQZA7vu9h_1ihZsIV7j_cym5vKgVRjGqE"
-          );
-        expect(response.status).toBe(400);
-        expect(response.body).toEqual({
-          success: false,
-          message: "Invalid credentials",
-        });
       });
     });
   });
@@ -228,12 +204,15 @@ describe("user", () => {
     describe("given valid token", () => {
       it("should delete user account and all his posts and comments", async () => {
         jest.useFakeTimers();
+        const findByIdAndSelectMock = jest
+          .spyOn(UserServices, "findByIdAndSelect") // @ts-ignore
+          .mockResolvedValue({ ...createUserResponse });
         const userFindByIdMock = jest
           .spyOn(UserServices, "findById") // @ts-ignore
-          .mockResolvedValueOnce(createUserResponse);
+          .mockResolvedValueOnce({ ...createUserResponse });
         const userDeleteMock = jest
           .spyOn(UserServices, "delete") // @ts-ignore
-          .mockResolvedValueOnce(createUserResponse);
+          .mockResolvedValueOnce({ ...createUserResponse });
         const postFindMock = jest
           .spyOn(PostServices, "find") //@ts-ignore
           .mockReturnValueOnce(deletePostResults);
@@ -244,11 +223,8 @@ describe("user", () => {
           .spyOn(CommentServices, "deleteMany")
           .mockResolvedValue({ acknowledged: true, deletedCount: 1 });
         const response = await request(app)
-          .delete("/api/v1/user?apikey=4fcc807ead48669c976b")
-          .set(
-            "Cookie",
-            "token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYyZGU1MmYxNDAzMjdiMmM2M2ZiMTVhOSIsImlhdCI6MTY1ODg5ODA1Mn0.plN9TzT7UMrQZA7vu9h_1ihZsIV7j_cym5vKgVRjGqE"
-          );
+          .delete("/api/v1/user")
+          .set({ ...apikey, ...authorization });
         expect(response.status).toBe(200);
         expect(response.body.success).toBe(true);
         expect(PostServices.deleteMany).toHaveBeenCalledTimes(1);
@@ -265,6 +241,40 @@ describe("user", () => {
           author: createUserResponse._id,
         });
         expect(CommentServices.deleteMany).toHaveBeenCalledTimes(3);
+      });
+    });
+  });
+  describe("logout", () => {
+    describe(" given valid token ", () => {
+      it("should be able to logout", async () => {
+        const userFindByIdMock = jest
+          .spyOn(UserServices, "findByIdAndSelect") // @ts-ignore
+          .mockResolvedValue({ ...createUserResponse });
+        const response = await request(app)
+          .post("/api/v1/user/logout")
+          .set({ ...apikey, ...authorization });
+        console.log(response.body);
+        expect(response.status).toBe(200);
+        expect(response.body).toEqual({
+          success: true,
+          message: "See you soon...",
+        });
+      });
+    });
+    describe(" given invalid token ", () => {
+      it("should not be able to logout", async () => {
+        const userFindByIdMock = jest
+          .spyOn(UserServices, "findByIdAndSelect") // @ts-ignore
+          .mockResolvedValue(null);
+        const response = await request(app)
+          .post("/api/v1/user/logout")
+          .set({ ...apikey, ...authorization });
+        console.log(response.body);
+        expect(response.status).toBe(400);
+        expect(response.body).toEqual({
+          success: false,
+          message: "Invalid credentials",
+        });
       });
     });
   });

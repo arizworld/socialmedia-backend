@@ -12,8 +12,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.app = void 0;
 const App_1 = __importDefault(require("./App"));
 const config_1 = __importDefault(require("./config/config"));
+const db_1 = __importDefault(require("./config/db"));
 const logger_1 = require("./utils/logger");
 const mailer_1 = __importDefault(require("./utils/mailer"));
 // uncaught error
@@ -36,8 +38,8 @@ process.on("uncaughtException", (err) => __awaiter(void 0, void 0, void 0, funct
     });
     process.exit(1);
 }));
-const app = new App_1.default();
-const server = app.listen(1020);
+exports.app = new App_1.default(db_1.default);
+const server = exports.app.listen(1020);
 // unhandled promise rejection
 process.on("unhandledRejection", (err) => __awaiter(void 0, void 0, void 0, function* () {
     var _c;

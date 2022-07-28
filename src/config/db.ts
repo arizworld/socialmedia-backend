@@ -2,8 +2,7 @@ import mongoose from "mongoose";
 import { logger, LogType } from "../utils/logger";
 import config from "./config";
 export default class DB {
-  private static bucket: any;
-  constructor() {
+  static connect() {
     mongoose
       .connect(
         `mongodb+srv://${config.mongoUsername}:${config.mongoPassword}@mycluster.90knz.mongodb.net/${config.testDb}?retryWrites=true&w=majority`
@@ -17,12 +16,6 @@ export default class DB {
       bucket = new mongoose.mongo.GridFSBucket(db, {
         bucketName: "uploads",
       });
-      DB.bucket = bucket;
     });
   }
-  static getBucket() {
-    return DB.bucket;
-  }
 }
-const bucket = DB.getBucket();
-export { bucket };
