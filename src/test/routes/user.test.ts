@@ -1,10 +1,13 @@
 import express from "express";
 import request from "supertest";
 import bcrypt from "bcrypt";
+import crypto from "crypto";
 import App from "../../App";
 import UserServices from "../../model/user.model";
 import PostServices from "../../model/post.model";
 import CommentServices from "../../model/comments.model";
+import sendEMail from "../../utils/mailer";
+jest.mock("../../utils/mailer", () => async () => true);
 const validUserInput = {
   username: "rando",
   email: "randomuser2@gmail.com",
@@ -23,6 +26,7 @@ const invalidLoginInput = {
   email: "randomuser2@gmail.com",
   password: "wrongpassowrd",
 };
+let encryptedResetToken;
 const createUserResponse = {
   username: "rando",
   email: "randomuser3@gmail.com",
@@ -37,6 +41,15 @@ const createUserResponse = {
       "$2b$10$oBz31PzJi/by0gdaGBYNvuayQF91dFpcR5JpQg9rtKrPKV3j6wtea"
     ),
   save: async () => Promise.resolve("1"),
+  getResetToken: async function (resetDelay: number) {
+    const resetToken = crypto.randomBytes(20).toString("hex");
+    encryptedResetToken = crypto
+      .createHash("sha256")
+      .update(resetToken)
+      .digest("hex");
+    return resetToken;
+  },
+  destroyResetToken: jest.fn(),
 };
 const deletePostResults = [
   {
@@ -253,7 +266,6 @@ describe("user", () => {
         const response = await request(app)
           .post("/api/v1/user/logout")
           .set({ ...apikey, ...authorization });
-        console.log(response.body);
         expect(response.status).toBe(200);
         expect(response.body).toEqual({
           success: true,
@@ -269,12 +281,40 @@ describe("user", () => {
         const response = await request(app)
           .post("/api/v1/user/logout")
           .set({ ...apikey, ...authorization });
-        console.log(response.body);
         expect(response.status).toBe(400);
         expect(response.body).toEqual({
           success: false,
           message: "Invalid credentials",
         });
+      });
+    });
+  });
+  describe("forgetpassword", () => {
+    describe("given valid email", () => {
+      it("should email user the reset urls", async () => {
+        const userFindOneMock = jest
+          .spyOn(UserServices, "findOne") //@ts-ignore
+          .mockResolvedValueOnce({ ...createUserResponse });
+        const response = await request(app)
+          .post("/api/v1/user/forgetpassword")
+          .set(apikey)
+          .send({ email: "testemail101@gmail.com" });
+        expect(response.status).toBe(200);
+        expect(response.body.success).toBe(true);
+      });
+    });
+    describe("given invalid email", () => {
+      it("should handle error", async () => {
+        const userFindOneMock = jest
+          .spyOn(UserServices, "findOne") //@ts-ignore
+          .mockResolvedValueOnce(null);
+        const response = await request(app)
+          .post("/api/v1/user/forgetpassword")
+          .set(apikey)
+          .send({ email: "testemail101@gmail.com" });
+        expect(response.status).toBe(400);
+        expect(response.body.success).toBe(false);
+        expect(response.body.message).toMatch("User not found");
       });
     });
   });

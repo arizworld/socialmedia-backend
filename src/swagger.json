@@ -1070,9 +1070,9 @@
       }
     },
     "/user/forgetpassword": {
-      "put": {
+      "post": {
         "summary": "Forget password",
-        "operationId": "put-user-forgetpassword",
+        "operationId": "post-user-forgetpassword",
         "responses": {
           "200": {
             "description": "OK",

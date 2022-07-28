@@ -22,7 +22,7 @@ export default [
   ]),
   new RouterBundler(
     "/user/forgetpassword",
-    HTTPMethods.put,
+    HTTPMethods.post,
     user.forgetPassword
   ),
   new RouterBundler(
