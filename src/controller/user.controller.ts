@@ -23,7 +23,7 @@ export default class UserController {
     let { username, email, password } = req.body;
     const user = await UserServices.findOne({ email });
     if (user) {
-      return next(new ErrorHandler(400, "USER_EXISTS"));
+      return next(new ErrorHandler(409, "USER_EXISTS"));
     }
     const blockedAccessTokens = [];
     const newUser: UserModel = await UserServices.create({

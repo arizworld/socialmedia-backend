@@ -11,6 +11,7 @@ import requestQueryValidators from "./middleware/requestQueryValidators";
 import validateApiKey from "./middleware/validateApiKey.middleware";
 import { showError } from "./middleware/error.middleware";
 import { logger, LogType } from "./utils/logger";
+import cors from "cors";
 // import database
 import DB from "./config/db";
 // import routes
@@ -57,6 +58,7 @@ export default class App {
     }
   }
   private initializeMiddlewares() {
+    this.app.use(cors());
     this.app.use(express.json());
     this.app.use(express.urlencoded({ extended: true }));
     this.app.use(cookieParser());

@@ -13,6 +13,6 @@ const config: Config.InitialOptions = {
   verbose: true,
   forceExit: true,
   clearMocks: true,
-  testTimeout: 30000,
+  testTimeout: 60000,
 };
 export default config;

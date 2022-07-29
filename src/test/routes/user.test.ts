@@ -6,7 +6,8 @@ import App from "../../App";
 import UserServices from "../../model/user.model";
 import PostServices from "../../model/post.model";
 import CommentServices from "../../model/comments.model";
-import sendEMail from "../../utils/mailer";
+import { upload } from "../../middleware/upload.middleware";
+import path from "path";
 jest.mock("../../utils/mailer", () => async () => true);
 const validUserInput = {
   username: "rando",
@@ -27,12 +28,17 @@ const invalidLoginInput = {
   password: "wrongpassowrd",
 };
 let encryptedResetToken;
+let resetToken;
 const createUserResponse = {
   username: "rando",
   email: "randomuser3@gmail.com",
   password: "$2b$10$oBz31PzJi/by0gdaGBYNvuayQF91dFpcR5JpQg9rtKrPKV3j6wtea",
   _id: "62e0cbd665b54e6a480db0ed",
   __v: 0,
+  image: {
+    data: "",
+    url: "",
+  },
   blockedAccessTokens: [],
   getToken: () => "jlskjflskythlhlkhs",
   comparePassword: async (password) =>
@@ -42,7 +48,7 @@ const createUserResponse = {
     ),
   save: async () => Promise.resolve("1"),
   getResetToken: async function (resetDelay: number) {
-    const resetToken = crypto.randomBytes(20).toString("hex");
+    resetToken = crypto.randomBytes(20).toString("hex");
     encryptedResetToken = crypto
       .createHash("sha256")
       .update(resetToken)
@@ -108,18 +114,9 @@ const authorization = {
   Authorization:
     "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYyZTEyYWY3MWM0NzhhZTNmYmM5MjBiMSIsImlhdCI6MTY1ODk4NDMzMn0.L1DOUKJmxSPr-0-NRUtofK1_6746Zg8U5ZaRSyeKPTs",
 };
-const serverResponse = {
-  success: true,
-  user: {
-    username: "rando",
-    email: "randomuser3@gmail.com",
-    password: "$2b$10$oBz31PzJi/by0gdaGBYNvuayQF91dFpcR5JpQg9rtKrPKV3j6wtea",
-    blockedAccessTokens: [],
-    _id: "62e0cbd665b54e6a480db0ed",
-    __v: 0,
-  },
-  message: "User created successfully.Please login to continue.",
-};
+const imagePath = path.join(__dirname, "../images/aritra.hiring.JPEG");
+const textPath = path.join(__dirname, "../images/cred.txt");
+console.log(imagePath);
 let app: express.Application;
 beforeAll(() => {
   app = new App().getInstance();
@@ -147,7 +144,7 @@ describe("user", () => {
           .set(apikey)
           .send(validUserInput);
         expect(response.status).toBe(201);
-        expect(response.body).toEqual(serverResponse);
+        expect(response.body.success).toBe(true);
       });
     });
     describe("given invalid input", () => {
@@ -179,7 +176,7 @@ describe("user", () => {
           .post("/api/v1/user")
           .set(apikey)
           .send(validUserInput);
-        expect(response.status).toBe(400);
+        expect(response.status).toBe(409);
         expect(response.body.success).toBe(false);
         expect(response.body.message).toMatch(/email already exists/);
       });
@@ -315,6 +312,45 @@ describe("user", () => {
         expect(response.status).toBe(400);
         expect(response.body.success).toBe(false);
         expect(response.body.message).toMatch("User not found");
+      });
+    });
+  });
+  describe("reset password", () => {
+    describe("given right token", () => {
+      it("should reset user's password", async () => {
+        const findOneMock = jest
+          .spyOn(UserServices, "findOne") // @ts-ignore
+          .mockImplementationOnce(async (query) => {
+            if (encryptedResetToken === query.resetToken) {
+              return createUserResponse;
+            }
+            return null;
+          });
+        const response = await request(app)
+          .put(`/api/v1/user/resetpassword/${resetToken}`)
+          .set(apikey)
+          .send({ password: "password", confirmPassword: "password" });
+        expect(response.status).toBe(200);
+        expect(response.body.success).toBe(true);
+      });
+    });
+    describe("given wrong token", () => {
+      it("should handle error", async () => {
+        const findOneMock = jest
+          .spyOn(UserServices, "findOne") // @ts-ignore
+          .mockImplementationOnce(async (query) => {
+            if (encryptedResetToken === query.resetToken) {
+              return createUserResponse;
+            }
+            return null;
+          });
+        const response = await request(app)
+          .put(`/api/v1/user/resetpassword/wrongtoken`)
+          .set(apikey)
+          .send({ password: "password", confirmPassword: "password" });
+        expect(response.status).toBe(401);
+        expect(response.body.success).toBe(false);
+        expect(response.body.message).toMatch(/Invalid reset token/);
       });
     });
   });
